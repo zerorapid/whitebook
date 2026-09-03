@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { 
   ArrowLeft, Mail, MapPin, Briefcase, Calendar, Building2, 
   Globe, Users, Phone, Edit2, MoreHorizontal, Archive, 
-  Trash2, X, Linkedin, Twitter, FileText, Camera
+  Trash2, X, Globe as Linkedin, Globe as Twitter, FileText, Camera
 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
