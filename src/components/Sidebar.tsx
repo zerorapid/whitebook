@@ -2,8 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  LayoutDashboard, Users, Layers, Calendar, 
-  CheckSquare, BarChart3, Settings, LifeBuoy
+  LayoutDashboard, Users, Layers, Settings, LifeBuoy
 } from 'lucide-react';
 
 export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
@@ -13,9 +12,9 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Contacts', href: '/contacts', icon: Users },
     { name: 'Groups & Tags', href: '/groups', icon: Layers },
-    { name: 'Calendar', href: '/calendar', icon: Calendar },
-    { name: 'Tasks', href: '/tasks', icon: CheckSquare },
-    { name: 'Reports', href: '/reports', icon: BarChart3 },
+    
+    
+    
   ];
 
   const system = [

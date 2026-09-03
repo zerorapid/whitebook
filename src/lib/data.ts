@@ -13,11 +13,7 @@ export const groups = [
   { id: 4, name: 'Alumni', count: 45, icon: 'graduation-cap', color: '#8b5cf6' },
 ];
 
-export const events = [
-  { id: 1, title: 'Q1 Review', date: new Date(), time: '10:00 AM' },
-  { id: 2, title: 'Investor Pitch', date: new Date(new Date().setDate(new Date().getDate() + 2)), time: '2:30 PM' },
-  { id: 3, title: 'Product Launch', date: new Date(new Date().setDate(new Date().getDate() + 5)), time: '9:00 AM' },
-];
+
 
 export const deals = [
   { id: 1, client: 'Acme Corp', amount: 12500, status: 'Won', date: '2024-03-12' },
