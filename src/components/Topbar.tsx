@@ -1,38 +1,41 @@
 "use client";
-import { useState } from "react";
+import { Bell, Search } from 'lucide-react';
 import Link from 'next/link';
-import { Search, Bell, HelpCircle, Menu } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
-export default function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
-  const router = useRouter();
-
+export default function Topbar() {
+  const pathname = usePathname();
+  
   return (
-    <div className="h-16 border-b border-border bg-background flex items-center justify-between px-6 z-40 sticky top-0">
-      <div className="flex items-center flex-1 max-w-md">
-        <button className="md:hidden mr-4" onClick={onMenuClick}>
-          <Menu className="w-5 h-5 text-muted-foreground" />
-        </button>
-        <div className="relative w-full">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input 
-            type="text" 
-            placeholder="Search contacts, notes, tags..." 
-            className="w-full h-9 pl-9 pr-4 rounded-md border border-input bg-transparent text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            onFocus={() => router.push('/contacts?search=focus')}
-          />
-        </div>
+    <header className="h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 flex items-center justify-between px-6">
+      <div className="flex-1 flex items-center md:hidden">
+        <span className="font-bold tracking-tight">White Book</span>
       </div>
       
-      <div className="flex items-center gap-2">
-        <Link href="/notifications" className="w-9 h-9 rounded-md flex items-center justify-center hover:bg-accent hover:text-accent-foreground text-muted-foreground relative transition-colors">
+      <div className="hidden md:flex flex-1 items-center gap-4">
+        {/* Sleek Global Search */}
+        <div className="relative group max-w-md w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <input 
+            type="text" 
+            placeholder="Search directory..." 
+            className="w-full h-9 pl-9 pr-12 rounded-full bg-muted/50 border-transparent focus:bg-background focus:border-border focus:ring-2 focus:ring-primary/10 text-sm font-medium transition-all"
+          />
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground bg-muted border border-border/50 px-1.5 py-0.5 rounded flex items-center gap-0.5 pointer-events-none">
+            <span className="font-sans">⌘</span>K
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <Link 
+          href="/notifications" 
+          className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+        >
           <Bell className="w-5 h-5" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full border-2 border-background"></span>
-        </Link>
-        <Link href="/support" className="w-9 h-9 rounded-md flex items-center justify-center hover:bg-accent hover:text-accent-foreground text-muted-foreground transition-colors">
-          <HelpCircle className="w-5 h-5" />
+          <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-background"></span>
         </Link>
       </div>
-    </div>
+    </header>
   );
 }

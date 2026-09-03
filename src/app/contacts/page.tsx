@@ -1,203 +1,115 @@
 "use client";
-import { useState, Suspense } from 'react';
-import { Search, Filter, Plus, MoreHorizontal, Mail, Phone, MapPin, X } from 'lucide-react';
-import { contacts } from '@/lib/data';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { 
+  Search, Plus, Filter, MoreHorizontal, 
+  Mail, Phone, Building2, MapPin, Check, Star, ArrowUpRight
+} from 'lucide-react';
+import { useStore } from '@/lib/store';
 
-function ContactsList() {
-  const searchParams = useSearchParams();
-  const groupFilter = searchParams.get('group');
-  
-  const [search, setSearch] = useState(groupFilter || '');
-  const [isNewContactOpen, setIsNewContactOpen] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+export default function ContactsDirectory() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const { contacts } = useStore();
 
-  const filteredContacts = contacts.filter(c => 
-    c.name.toLowerCase().includes(search.toLowerCase()) || 
-    c.role.toLowerCase().includes(search.toLowerCase()) ||
-    c.tags.some(t => t.toLowerCase().includes(search.toLowerCase()))
+  const filteredContacts = contacts.filter((c: any) => 
+    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.company.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="space-y-6 relative">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Contacts</h1>
-          <p className="text-muted-foreground mt-1">Manage your network and relationships.</p>
+    <div className="space-y-8 pb-12 animate-in fade-in duration-700">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border/40">
+        <div className="space-y-1.5">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">Directory</h1>
+          <p className="text-muted-foreground text-sm font-medium">Manage and search your professional network.</p>
         </div>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => setIsFilterOpen(true)}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2 shadow-sm gap-2"
-          >
-            <Filter className="w-4 h-4" /> Filter
+        <div className="flex items-center gap-3">
+          <button className="inline-flex items-center justify-center rounded-full text-sm font-semibold transition-all bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-5">
+            <Filter className="w-4 h-4 mr-2" />
+            Filters
           </button>
-          <button 
-            onClick={() => setIsNewContactOpen(true)}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 shadow-sm gap-2"
-          >
-            <Plus className="w-4 h-4" /> New Contact
-          </button>
+          <Link href="/contacts" className="inline-flex items-center justify-center rounded-full text-sm font-medium transition-all bg-foreground text-background hover:bg-foreground/90 hover:scale-105 active:scale-95 h-10 px-5 shadow-lg shadow-black/5">
+            <Plus className="w-4 h-4 mr-2" />
+            New Contact
+          </Link>
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card text-card-foreground shadow-sm">
-        <div className="p-4 border-b border-border flex items-center gap-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input 
-              type="text" 
-              placeholder="Search contacts by name, role, or tag..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-4 rounded-md border border-input bg-transparent text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            />
-          </div>
+      {/* Search Bar */}
+      <div className="relative max-w-2xl mx-auto md:mx-0 group">
+        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+          <Search className="h-5 w-5" />
         </div>
-        <div className="divide-y divide-border">
-          {filteredContacts.map(contact => (
-            <div key={contact.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/50 transition-colors">
-              <div className="flex items-center gap-4">
+        <input 
+          type="text" 
+          placeholder="Search by name, role, or company..." 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="block w-full pl-11 pr-4 py-3.5 bg-card border border-border rounded-2xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-sm"
+        />
+      </div>
+
+      {/* Grid Layout - Premium Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredContacts.map((contact: any, idx: number) => (
+          <div 
+            key={contact.id} 
+            className="group relative bg-card rounded-2xl border border-border/60 hover:border-border p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+            style={{ animationDelay: `${idx * 50}ms` }}
+          >
+            {/* VIP Star */}
+            {contact.tags.includes('VIP') && (
+              <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center">
+                <Star className="w-3.5 h-3.5 fill-current" />
+              </div>
+            )}
+            
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="relative">
                 <img 
-                  src={`https://api.dicebear.com/7.x/micah/svg?seed=${contact.name.replace(' ', '')}&backgroundColor=transparent`} 
+                  src={`https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} 
                   alt={contact.name} 
-                  className="w-12 h-12 rounded-full bg-blue-50 border border-border p-0.5 flex-shrink-0 shadow-sm" 
+                  className="w-20 h-20 rounded-full bg-secondary border-4 border-background shadow-sm" 
                 />
-                <div>
-                  <Link href={`/contacts/${contact.id}`} className="font-semibold hover:text-primary hover:underline">{contact.name}</Link>
-                  <div className="text-sm text-muted-foreground">{contact.role}</div>
-                  <div className="flex items-center gap-3 mt-1">
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="w-3 h-3" /> {contact.location}
-                    </div>
-                  </div>
-                </div>
+                <div className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-background rounded-full"></div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="hidden md:flex gap-2">
-                  {contact.tags.map(tag => (
-                    <button 
-                      key={tag}
-                      onClick={() => setSearch(tag)}
-                      className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 transition-colors"
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2">
-                  <a 
-                    href={`mailto:${contact.email}`}
-                    className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-accent-foreground border border-transparent hover:border-border transition-colors"
-                  >
-                    <Mail className="w-4 h-4" />
-                  </a>
-                  <Link 
-                    href={`/contacts/${contact.id}`}
-                    className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:bg-accent hover:text-accent-foreground border border-transparent hover:border-border transition-colors"
-                  >
-                    <MoreHorizontal className="w-4 h-4" />
-                  </Link>
+              
+              <div className="space-y-1">
+                <h3 className="font-bold text-lg text-foreground tracking-tight">{contact.name}</h3>
+                <p className="text-sm font-medium text-primary">{contact.role}</p>
+                <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-muted-foreground mt-1">
+                  <Building2 className="w-3.5 h-3.5" /> {contact.company}
                 </div>
               </div>
             </div>
-          ))}
-          {filteredContacts.length === 0 && (
-            <div className="p-8 text-center text-muted-foreground">
-              No contacts found matching "{search}".
+
+            <div className="mt-6 pt-6 border-t border-border/40 grid grid-cols-3 gap-2">
+              <a href={`mailto:${contact.email}`} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors group/btn">
+                <Mail className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider">Email</span>
+              </a>
+              <a href="#" className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors group/btn">
+                <Phone className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider">Call</span>
+              </a>
+              <Link href={`/contacts/${contact.id}`} className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-primary/5 text-primary hover:bg-primary/10 transition-colors group/btn">
+                <ArrowUpRight className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider">View</span>
+              </Link>
             </div>
-          )}
-        </div>
+          </div>
+        ))}
       </div>
-
-      {/* New Contact Modal */}
-      {isNewContactOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card text-card-foreground rounded-xl shadow-lg max-w-lg w-full border border-border animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-border">
-              <h3 className="font-semibold text-lg">Add New Contact</h3>
-              <button onClick={() => setIsNewContactOpen(false)} className="text-muted-foreground hover:text-foreground">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">First Name</label>
-                  <input type="text" className="w-full h-9 px-3 rounded-md border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Jane" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Last Name</label>
-                  <input type="text" className="w-full h-9 px-3 rounded-md border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Doe" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Email Address</label>
-                <input type="email" className="w-full h-9 px-3 rounded-md border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="jane@example.com" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Job Title</label>
-                  <input type="text" className="w-full h-9 px-3 rounded-md border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="CEO" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Company</label>
-                  <input type="text" className="w-full h-9 px-3 rounded-md border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="Acme Corp" />
-                </div>
-              </div>
-            </div>
-            <div className="p-4 border-t border-border bg-muted/30 flex justify-end gap-2">
-              <button onClick={() => setIsNewContactOpen(false)} className="px-4 py-2 text-sm font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors">Cancel</button>
-              <button onClick={() => {  setIsNewContactOpen(false); }} className="px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">Save Contact</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Filter Modal */}
-      {isFilterOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card text-card-foreground rounded-xl shadow-lg max-w-sm w-full border border-border animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-border">
-              <h3 className="font-semibold text-lg">Filter Contacts</h3>
-              <button onClick={() => setIsFilterOpen(false)} className="text-muted-foreground hover:text-foreground">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">By Group</label>
-                <select className="w-full h-9 px-3 rounded-md border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                  <option>All Groups</option>
-                  <option>VIP Clients</option>
-                  <option>Investors</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Sort By</label>
-                <select className="w-full h-9 px-3 rounded-md border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                  <option>Recently Added</option>
-                  <option>Name (A-Z)</option>
-                  <option>Last Contacted</option>
-                </select>
-              </div>
-            </div>
-            <div className="p-4 border-t border-border bg-muted/30 flex justify-end gap-2">
-              <button onClick={() => setIsFilterOpen(false)} className="px-4 py-2 text-sm font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors">Clear</button>
-              <button onClick={() => setIsFilterOpen(false)} className="px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">Apply Filters</button>
-            </div>
-          </div>
+      
+      {filteredContacts.length === 0 && (
+        <div className="text-center py-20 bg-card rounded-2xl border border-dashed">
+          <Users className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+          <h3 className="text-lg font-bold">No contacts found</h3>
+          <p className="text-muted-foreground text-sm mt-1">Try adjusting your search terms or add a new contact.</p>
         </div>
       )}
     </div>
-  );
-}
-
-export default function ContactsPage() {
-  return (
-    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading contacts...</div>}>
-      <ContactsList />
-    </Suspense>
   );
 }
