@@ -6,9 +6,19 @@ import { StoreProvider } from "@/lib/store";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
+export const metadata: import('next').Metadata = {
   title: "White Book",
   description: "White Book - Private Directory",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "White Book",
+  },
+};
+
+export const viewport = {
+  themeColor: "#18181b",
 };
 
 export default function RootLayout({
