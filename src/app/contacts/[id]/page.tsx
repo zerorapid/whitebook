@@ -19,9 +19,7 @@ export default function ContactDetail({ params }: { params: { id: string } }) {
   
   const handleSaveNote = () => {
     if (!newNote.trim()) return;
-    const updatedNotes = (contact.notes ? contact.notes + '
-
-' : '') + newNote;
+    const updatedNotes = (contact.notes ? contact.notes + '\n\n' : '') + newNote;
     updateContact(contact.id, { notes: updatedNotes });
     setNewNote('');
   };
