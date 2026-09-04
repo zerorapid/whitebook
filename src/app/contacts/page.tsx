@@ -1,9 +1,9 @@
 "use client";
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { 
-  Search, Plus, Filter, MoreHorizontal, 
-  Mail, Phone, Building2, MapPin, Check, Star, ArrowUpRight
+  Search, Plus, Filter, 
+  Mail, Phone, Building2, Star, ArrowUpRight, Sparkles
 } from 'lucide-react';
 import { useStore } from '@/lib/store';
 
@@ -11,11 +11,35 @@ export default function ContactsDirectory() {
   const [searchQuery, setSearchQuery] = useState('');
   const { contacts } = useStore();
 
-  const filteredContacts = contacts.filter((c: any) => 
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.company.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredContacts = useMemo(() => {
+    if (!searchQuery) return contacts;
+    const query = searchQuery.toLowerCase();
+    
+    return contacts.filter((c: any) => {
+      // Basic text matching
+      const basicMatch = 
+        c.name.toLowerCase().includes(query) ||
+        c.role.toLowerCase().includes(query) ||
+        c.company.toLowerCase().includes(query) ||
+        c.location.toLowerCase().includes(query);
+
+      // "Human Search" / Semantic parsing simulation
+      let semanticMatch = false;
+      if (query.includes("works at") || query.includes("at ")) {
+        const targetCompany = query.split(/works at |at /)[1].trim();
+        if (targetCompany && c.company.toLowerCase().includes(targetCompany)) semanticMatch = true;
+      }
+      if (query.includes("lives in") || query.includes("in ")) {
+        const targetLocation = query.split(/lives in |in /)[1].trim();
+        if (targetLocation && c.location.toLowerCase().includes(targetLocation)) semanticMatch = true;
+      }
+      if (query.includes("vip")) {
+        if (c.tags.includes("VIP")) semanticMatch = true;
+      }
+
+      return basicMatch || semanticMatch;
+    });
+  }, [contacts, searchQuery]);
 
   return (
     <div className="space-y-8 pb-12 animate-in fade-in duration-700">
@@ -26,10 +50,6 @@ export default function ContactsDirectory() {
           <p className="text-muted-foreground text-sm font-medium">Manage and search your professional network.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="inline-flex items-center justify-center rounded-full text-sm font-semibold transition-all bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-5">
-            <Filter className="w-4 h-4 mr-2" />
-            Filters
-          </button>
           <Link href="/contacts" className="inline-flex items-center justify-center rounded-full text-sm font-medium transition-all bg-foreground text-background hover:bg-foreground/90 hover:scale-105 active:scale-95 h-10 px-5 shadow-lg shadow-black/5">
             <Plus className="w-4 h-4 mr-2" />
             New Contact
@@ -37,18 +57,23 @@ export default function ContactsDirectory() {
         </div>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative max-w-2xl mx-auto md:mx-0 group">
+      {/* Smart Search Bar */}
+      <div className="relative max-w-3xl mx-auto md:mx-0 group">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
           <Search className="h-5 w-5" />
         </div>
         <input 
           type="text" 
-          placeholder="Search by name, role, or company..." 
+          placeholder="Try 'Works at Google' or 'Lives in New York'..." 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="block w-full pl-11 pr-4 py-3.5 bg-card border border-border rounded-2xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-sm"
+          className="block w-full pl-11 pr-32 py-4 bg-card border border-border rounded-2xl text-sm font-medium focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-sm"
         />
+        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+          <div className="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-2.5 py-1 rounded-lg text-xs font-bold border border-blue-100">
+            <Sparkles className="w-3 h-3" /> Smart Search
+          </div>
+        </div>
       </div>
 
       {/* Grid Layout - Premium Cards */}
@@ -73,7 +98,6 @@ export default function ContactsDirectory() {
                   alt={contact.name} 
                   className="w-20 h-20 rounded-full bg-secondary border-4 border-background shadow-sm" 
                 />
-                <div className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 border-2 border-background rounded-full"></div>
               </div>
               
               <div className="space-y-1">
@@ -102,14 +126,6 @@ export default function ContactsDirectory() {
           </div>
         ))}
       </div>
-      
-      {filteredContacts.length === 0 && (
-        <div className="text-center py-20 bg-card rounded-2xl border border-dashed">
-          <Users className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-          <h3 className="text-lg font-bold">No contacts found</h3>
-          <p className="text-muted-foreground text-sm mt-1">Try adjusting your search terms or add a new contact.</p>
-        </div>
-      )}
     </div>
   );
 }
