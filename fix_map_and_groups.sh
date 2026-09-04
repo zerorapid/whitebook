@@ -1,3 +1,252 @@
+#!/bin/bash
+set -e
+cd /Users/Jayapalreddy/.gemini/antigravity/scratch/crm-os-next
+
+# 1. Update the Store to handle WhatsApp-style cascading changes
+cat << 'STORE' > src/lib/store.tsx
+"use client";
+import React, { createContext, useContext, useState } from 'react';
+import { contacts as initialContacts, groups as initialGroups } from './data';
+
+const StoreContext = createContext<any>(null);
+
+export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
+  const enhancedContacts = initialContacts.map((c: any, i: number) => ({
+    ...c,
+    birthday: i % 3 === 0 ? 'Oct 12' : null,
+    followUp: i % 4 === 0 ? 'Tomorrow' : null,
+    locationCoords: { lat: 40.7128 + (Math.random() * 0.1), lng: -74.0060 + (Math.random() * 0.1) },
+    notes: "Met at the annual conference. " + (c.notes || "")
+  }));
+
+  const [contacts, setContacts] = useState(enhancedContacts);
+  const [groups, setGroups] = useState(initialGroups);
+  
+  const [duplicates, setDuplicates] = useState([
+    { id: 1, name: "David Kim", match: "David K.", confidence: "98%" },
+    { id: 2, name: "Sarah Chen", match: "Sarah C.", confidence: "95%" }
+  ]);
+
+  const [notifications, setNotifications] = useState([
+    { id: 1, type: 'alert', title: 'Sync Complete', description: 'Google Contacts synced successfully.', time: 'Just now', read: false },
+  ]);
+
+  return (
+    <StoreContext.Provider value={{
+      contacts,
+      addContact: (c: any) => setContacts([...contacts, c]),
+      updateContact: (id: number, data: any) => setContacts(contacts.map((c: any) => c.id === id ? { ...c, ...data } : c)),
+      deleteContact: (id: number) => setContacts(contacts.filter((c: any) => c.id !== id)),
+      
+      groups,
+      addGroup: (g: any, initialContactIds: number[] = []) => {
+        setGroups([...groups, g]);
+        // Instantly add these contacts to the group
+        if (initialContactIds.length > 0) {
+          setContacts(contacts.map((c: any) => {
+            if (initialContactIds.includes(c.id)) {
+              const newTags = c.tags ? [...c.tags, g.name] : [g.name];
+              return { ...c, tags: Array.from(new Set(newTags)) };
+            }
+            return c;
+          }));
+        }
+      },
+      updateGroup: (id: number, newName: string) => {
+        const groupToEdit = groups.find((g: any) => g.id === id);
+        if (!groupToEdit) return;
+        
+        const oldName = groupToEdit.name;
+        
+        // Update group name
+        setGroups(groups.map((g: any) => g.id === id ? { ...g, name: newName } : g));
+        
+        // Cascade tag change to all members
+        setContacts(contacts.map((c: any) => {
+          if (c.tags?.includes(oldName)) {
+            const newTags = c.tags.map((t: string) => t === oldName ? newName : t);
+            return { ...c, tags: newTags };
+          }
+          return c;
+        }));
+      },
+      deleteGroup: (id: number) => {
+        const groupToDelete = groups.find((g: any) => g.id === id);
+        setGroups(groups.filter((g: any) => g.id !== id));
+        // Remove the tag from all contacts
+        if (groupToDelete) {
+          setContacts(contacts.map((c: any) => {
+            if (c.tags?.includes(groupToDelete.name)) {
+              return { ...c, tags: c.tags.filter((t: string) => t !== groupToDelete.name) };
+            }
+            return c;
+          }));
+        }
+      },
+
+      duplicates,
+      resolveDuplicate: (id: number) => setDuplicates(duplicates.filter(d => d.id !== id)),
+
+      notifications,
+      markAsRead: (id: number) => setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n)),
+      markAllAsRead: () => setNotifications(notifications.map(n => ({ ...n, read: true }))),
+      deleteNotification: (id: number) => setNotifications(notifications.filter(n => n.id !== id)),
+    }}>
+      {children}
+    </StoreContext.Provider>
+  );
+};
+
+export const useStore = () => useContext(StoreContext);
+STORE
+
+# 2. Rebuild the Map Page using Leaflet and CartoDB (No API Keys, 100% Free, Perfect B&W)
+cat << 'MAP' > src/app/map/page.tsx
+"use client";
+import { useEffect, useRef, useState } from 'react';
+import { Map as MapIcon, Crosshair } from 'lucide-react';
+import { useStore } from '@/lib/store';
+
+export default function MapPage() {
+  const { contacts } = useStore();
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+
+  useEffect(() => {
+    // Inject Leaflet CSS
+    if (!document.getElementById('leaflet-css')) {
+      const link = document.createElement('link');
+      link.id = 'leaflet-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+    }
+
+    // Inject Leaflet JS
+    const loadLeaflet = () => {
+      if ((window as any).L) {
+        initMap();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.async = true;
+      script.onload = initMap;
+      document.body.appendChild(script);
+    };
+
+    const initMap = () => {
+      if (!mapRef.current || !(window as any).L) return;
+
+      const L = (window as any).L;
+      
+      // Clean up previous map instance if it exists
+      if ((mapRef.current as any)._leaflet_id) {
+        return; 
+      }
+
+      const map = L.map(mapRef.current, {
+        zoomControl: false, // We'll disable default zoom controls for a cleaner look
+        attributionControl: false
+      }).setView([40.7128, -74.0060], 13); // NYC Center
+
+      // CartoDB Positron: Beautiful, completely free Black & White line-art map (No API key needed!)
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Add markers
+      contacts.forEach((contact: any) => {
+        const latOffset = (Math.random() - 0.5) * 0.05;
+        const lngOffset = (Math.random() - 0.5) * 0.05;
+        const isVIP = contact.tags?.includes('VIP');
+
+        const circleMarker = L.circleMarker([40.7128 + latOffset, -74.0060 + lngOffset], {
+          color: '#ffffff',
+          weight: 2,
+          fillColor: isVIP ? '#000000' : '#888888',
+          fillOpacity: 1,
+          radius: 8
+        }).addTo(map);
+
+        circleMarker.bindTooltip(`<b>${contact.name}</b><br/>${contact.company}`, {
+          className: 'bg-white text-black border shadow-sm rounded-lg p-2 font-sans text-xs',
+          direction: 'top'
+        });
+      });
+
+      setMapLoaded(true);
+    };
+
+    loadLeaflet();
+    
+    return () => {
+      // Cleanup map instance on unmount
+      if (mapRef.current && (mapRef.current as any)._leaflet_id) {
+        const L = (window as any).L;
+        if (L) {
+          // This prevents the "Map container is already initialized" error
+          mapRef.current.innerHTML = '';
+          (mapRef.current as any)._leaflet_id = null;
+        }
+      }
+    };
+  }, [contacts]);
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-700 h-[calc(100vh-6rem)] flex flex-col">
+      <div className="space-y-1.5 shrink-0">
+        <h1 className="text-4xl font-bold tracking-tight text-foreground flex items-center gap-3">
+          <MapIcon className="w-8 h-8 text-primary" />
+          Network Map
+        </h1>
+        <p className="text-muted-foreground text-sm font-medium">Live geographic distribution powered by open-source tile layers.</p>
+      </div>
+
+      <div className="flex-1 rounded-3xl border border-border/60 bg-[#f8f9fa] relative overflow-hidden shadow-sm ring-1 ring-black/5">
+        {!mapLoaded && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-10 text-black">
+            <div className="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-sm font-semibold">Loading Map Data...</p>
+          </div>
+        )}
+        
+        <div ref={mapRef} className="w-full h-full z-0" />
+        
+        {/* Floating Controls */}
+        <div className="absolute bottom-8 left-8 z-20">
+          <div className="bg-white/95 backdrop-blur-xl p-5 rounded-2xl border shadow-xl max-w-sm text-black">
+            <h3 className="font-bold text-base mb-1">Live Directory</h3>
+            <p className="text-sm text-gray-500 mb-4">Showing {contacts.length} active contacts in this region.</p>
+            <div className="flex gap-2">
+              <button className="flex-1 flex items-center justify-center py-2.5 bg-black text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-md">
+                <Crosshair className="w-4 h-4 mr-2" /> Locate Me
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="absolute top-8 right-8 z-20">
+          <div className="bg-white/95 backdrop-blur-xl px-4 py-3 rounded-2xl border shadow-xl flex flex-col gap-2 text-black">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-[#888888] border border-white"></div>
+              <span className="text-xs font-bold">Standard</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-black border border-white"></div>
+              <span className="text-xs font-bold">VIP / Investor</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+MAP
+
+# 3. WhatsApp Style Groups (Multi-select creation & editing)
+cat << 'GROUPS' > src/app/groups/page.tsx
 "use client";
 import { useState, useMemo } from 'react';
 import { Layers, Plus, Users, Trash2, Edit2, X, Search, UserPlus, Check } from 'lucide-react';
@@ -393,3 +642,4 @@ export default function GroupsPage() {
     </div>
   );
 }
+GROUPS

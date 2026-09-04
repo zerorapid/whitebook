@@ -22,8 +22,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   ]);
 
   const [notifications, setNotifications] = useState([
-    { id: 1, type: 'alert', title: 'Sync Complete', description: 'Google Contacts synced successfully. 12 updated.', time: 'Just now', read: false },
-    { id: 2, type: 'message', title: '2 Duplicates Found', description: 'AI detected 2 overlapping contacts.', time: '1 hr ago', read: false },
+    { id: 1, type: 'alert', title: 'Sync Complete', description: 'Google Contacts synced successfully.', time: 'Just now', read: false },
   ]);
 
   return (
@@ -34,9 +33,50 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       deleteContact: (id: number) => setContacts(contacts.filter((c: any) => c.id !== id)),
       
       groups,
-      addGroup: (g: any) => setGroups([...groups, g]),
-      updateGroup: (id: number, name: string) => setGroups(groups.map((g: any) => g.id === id ? { ...g, name } : g)),
-      deleteGroup: (id: number) => setGroups(groups.filter((g: any) => g.id !== id)),
+      addGroup: (g: any, initialContactIds: number[] = []) => {
+        setGroups([...groups, g]);
+        // Instantly add these contacts to the group
+        if (initialContactIds.length > 0) {
+          setContacts(contacts.map((c: any) => {
+            if (initialContactIds.includes(c.id)) {
+              const newTags = c.tags ? [...c.tags, g.name] : [g.name];
+              return { ...c, tags: Array.from(new Set(newTags)) };
+            }
+            return c;
+          }));
+        }
+      },
+      updateGroup: (id: number, newName: string) => {
+        const groupToEdit = groups.find((g: any) => g.id === id);
+        if (!groupToEdit) return;
+        
+        const oldName = groupToEdit.name;
+        
+        // Update group name
+        setGroups(groups.map((g: any) => g.id === id ? { ...g, name: newName } : g));
+        
+        // Cascade tag change to all members
+        setContacts(contacts.map((c: any) => {
+          if (c.tags?.includes(oldName)) {
+            const newTags = c.tags.map((t: string) => t === oldName ? newName : t);
+            return { ...c, tags: newTags };
+          }
+          return c;
+        }));
+      },
+      deleteGroup: (id: number) => {
+        const groupToDelete = groups.find((g: any) => g.id === id);
+        setGroups(groups.filter((g: any) => g.id !== id));
+        // Remove the tag from all contacts
+        if (groupToDelete) {
+          setContacts(contacts.map((c: any) => {
+            if (c.tags?.includes(groupToDelete.name)) {
+              return { ...c, tags: c.tags.filter((t: string) => t !== groupToDelete.name) };
+            }
+            return c;
+          }));
+        }
+      },
 
       duplicates,
       resolveDuplicate: (id: number) => setDuplicates(duplicates.filter(d => d.id !== id)),
