@@ -12,29 +12,37 @@ export default function ContactsDirectory() {
   const { contacts } = useStore();
 
   const filteredContacts = useMemo(() => {
-    if (!searchQuery) return contacts;
-    const query = searchQuery.toLowerCase();
+    if (!searchQuery || searchQuery.trim() === '') return contacts;
+    const query = searchQuery.toLowerCase().trim();
     
     return contacts.filter((c: any) => {
-      // Basic text matching
+      // Safely check properties
+      const name = c.name?.toLowerCase() || '';
+      const role = c.role?.toLowerCase() || '';
+      const company = c.company?.toLowerCase() || '';
+      const location = c.location?.toLowerCase() || '';
+      
       const basicMatch = 
-        c.name.toLowerCase().includes(query) ||
-        c.role.toLowerCase().includes(query) ||
-        c.company.toLowerCase().includes(query) ||
-        c.location.toLowerCase().includes(query);
+        name.includes(query) ||
+        role.includes(query) ||
+        company.includes(query) ||
+        location.includes(query);
 
-      // "Human Search" / Semantic parsing simulation
       let semanticMatch = false;
-      if (query.includes("works at") || query.includes("at ")) {
-        const targetCompany = query.split(/works at |at /)[1].trim();
-        if (targetCompany && c.company.toLowerCase().includes(targetCompany)) semanticMatch = true;
+      
+      // Smart parsing with Regex to avoid crashes on split
+      const worksMatch = query.match(/(?:works at|at)\s+(.+)/);
+      if (worksMatch && worksMatch[1]) {
+        if (company.includes(worksMatch[1].trim())) semanticMatch = true;
       }
-      if (query.includes("lives in") || query.includes("in ")) {
-        const targetLocation = query.split(/lives in |in /)[1].trim();
-        if (targetLocation && c.location.toLowerCase().includes(targetLocation)) semanticMatch = true;
+      
+      const livesMatch = query.match(/(?:lives in|in)\s+(.+)/);
+      if (livesMatch && livesMatch[1]) {
+        if (location.includes(livesMatch[1].trim())) semanticMatch = true;
       }
-      if (query.includes("vip")) {
-        if (c.tags.includes("VIP")) semanticMatch = true;
+      
+      if (query.includes("vip") && c.tags?.includes("VIP")) {
+        semanticMatch = true;
       }
 
       return basicMatch || semanticMatch;
@@ -43,7 +51,6 @@ export default function ContactsDirectory() {
 
   return (
     <div className="space-y-8 pb-12 animate-in fade-in duration-700">
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border/40">
         <div className="space-y-1.5">
           <h1 className="text-4xl font-bold tracking-tight text-foreground">Directory</h1>
@@ -57,7 +64,6 @@ export default function ContactsDirectory() {
         </div>
       </div>
 
-      {/* Smart Search Bar */}
       <div className="relative max-w-3xl mx-auto md:mx-0 group">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
           <Search className="h-5 w-5" />
@@ -76,30 +82,20 @@ export default function ContactsDirectory() {
         </div>
       </div>
 
-      {/* Grid Layout - Premium Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredContacts.map((contact: any, idx: number) => (
           <div 
             key={contact.id} 
             className="group relative bg-card rounded-2xl border border-border/60 hover:border-border p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-            style={{ animationDelay: `${idx * 50}ms` }}
           >
-            {/* VIP Star */}
-            {contact.tags.includes('VIP') && (
+            {contact.tags?.includes('VIP') && (
               <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center">
                 <Star className="w-3.5 h-3.5 fill-current" />
               </div>
             )}
             
             <div className="flex flex-col items-center text-center space-y-4">
-              <div className="relative">
-                <img 
-                  src={`https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} 
-                  alt={contact.name} 
-                  className="w-20 h-20 rounded-full bg-secondary border-4 border-background shadow-sm" 
-                />
-              </div>
-              
+              <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} alt={contact.name} className="w-20 h-20 rounded-full bg-secondary border-4 border-background shadow-sm" />
               <div className="space-y-1">
                 <h3 className="font-bold text-lg text-foreground tracking-tight">{contact.name}</h3>
                 <p className="text-sm font-medium text-primary">{contact.role}</p>
@@ -125,6 +121,11 @@ export default function ContactsDirectory() {
             </div>
           </div>
         ))}
+        {filteredContacts.length === 0 && (
+          <div className="col-span-full py-12 text-center bg-card rounded-2xl border border-dashed">
+            <p className="text-muted-foreground font-semibold">No contacts found matching your search.</p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -5,7 +5,6 @@ import { contacts as initialContacts, groups as initialGroups } from './data';
 const StoreContext = createContext<any>(null);
 
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
-  // Enhanced Contacts with birthdays, follow-ups, and locations
   const enhancedContacts = initialContacts.map((c: any, i: number) => ({
     ...c,
     birthday: i % 3 === 0 ? 'Oct 12' : null,
@@ -31,9 +30,12 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     <StoreContext.Provider value={{
       contacts,
       addContact: (c: any) => setContacts([...contacts, c]),
+      updateContact: (id: number, data: any) => setContacts(contacts.map((c: any) => c.id === id ? { ...c, ...data } : c)),
       deleteContact: (id: number) => setContacts(contacts.filter((c: any) => c.id !== id)),
       
       groups,
+      addGroup: (g: any) => setGroups([...groups, g]),
+      updateGroup: (id: number, name: string) => setGroups(groups.map((g: any) => g.id === id ? { ...g, name } : g)),
       deleteGroup: (id: number) => setGroups(groups.filter((g: any) => g.id !== id)),
 
       duplicates,

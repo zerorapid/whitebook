@@ -1,172 +1,175 @@
 "use client";
 import { useState } from 'react';
-import { Plus, Users, Star, TrendingUp, Terminal, GraduationCap, MoreHorizontal, X, Trash2 } from 'lucide-react';
-import { groups } from '@/lib/data';
-import { useRouter } from 'next/navigation';
-
-const iconMap: Record<string, React.ReactNode> = {
-  'star': <Star className="w-5 h-5 text-amber-500" />,
-  'trending-up': <TrendingUp className="w-5 h-5 text-emerald-500" />,
-  'terminal': <Terminal className="w-5 h-5 text-blue-500" />,
-  'graduation-cap': <GraduationCap className="w-5 h-5 text-purple-500" />,
-};
-
-const iconOptions = [
-  { value: 'star', label: 'Star' },
-  { value: 'trending-up', label: 'Trending Up' },
-  { value: 'terminal', label: 'Terminal' },
-  { value: 'graduation-cap', label: 'Graduation Cap' }
-];
-
-const colorSwatches = ['#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444', '#ec4899'];
+import { Layers, Plus, Users, Trash2, Edit2, X, Check } from 'lucide-react';
+import { useStore } from '@/lib/store';
 
 export default function GroupsPage() {
-  const router = useRouter();
+  const { groups, addGroup, deleteGroup, contacts, updateContact } = useStore();
+  const [activeGroup, setActiveGroup] = useState<any>(null);
   
-  // State for Modals
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingGroup, setEditingGroup] = useState<any | null>(null);
-  
-  // Form State for new group
-  const [selectedColor, setSelectedColor] = useState(colorSwatches[0]);
+  // Modals state
+  const [showNewGroup, setShowNewGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+
+  // Find contacts that belong to a group (by tag)
+  const getContactsInGroup = (groupName: string) => {
+    return contacts.filter((c: any) => c.tags?.includes(groupName));
+  };
+
+  // Add/Remove contact from active group
+  const toggleContactInGroup = (contact: any) => {
+    if (!activeGroup) return;
+    const hasTag = contact.tags?.includes(activeGroup.name);
+    
+    let newTags = contact.tags || [];
+    if (hasTag) {
+      newTags = newTags.filter((t: string) => t !== activeGroup.name);
+    } else {
+      newTags = [...newTags, activeGroup.name];
+    }
+    
+    updateContact(contact.id, { tags: newTags });
+  };
+
+  const handleCreateGroup = (e: any) => {
+    e.preventDefault();
+    if (!newGroupName.trim()) return;
+    
+    const newGroup = {
+      id: Date.now(),
+      name: newGroupName,
+      color: "bg-blue-100 text-blue-600"
+    };
+    addGroup(newGroup);
+    setNewGroupName('');
+    setShowNewGroup(false);
+  };
 
   return (
-    <div className="space-y-6 relative">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Groups & Tags</h1>
-          <p className="text-muted-foreground mt-1">Organize your network into distinct categories.</p>
+    <div className="space-y-8 pb-12 animate-in fade-in duration-700 h-[calc(100vh-6rem)] flex flex-col">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border/40 shrink-0">
+        <div className="space-y-1.5">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground flex items-center gap-3">
+            <Layers className="w-8 h-8 text-primary" />
+            Groups & Cohorts
+          </h1>
+          <p className="text-muted-foreground text-sm font-medium">Organize your network into distinct event cohorts and lists.</p>
         </div>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => setIsCreateOpen(true)}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 shadow-sm gap-2"
-          >
-            <Plus className="w-4 h-4" /> Create Group
-          </button>
-        </div>
+        <button 
+          onClick={() => setShowNewGroup(true)}
+          className="inline-flex items-center justify-center rounded-full text-sm font-medium transition-all bg-foreground text-background hover:bg-foreground/90 h-10 px-5"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Create Group
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {groups.map(group => (
-          <div key={group.id} className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 flex flex-col hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4 mb-6">
-              <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center bg-opacity-10"
-                style={{ backgroundColor: `${group.color}20` }}
-              >
-                {iconMap[group.icon] || <Users className="w-5 h-5 text-muted-foreground" />}
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">{group.name}</h3>
-                <p className="text-sm text-muted-foreground">{group.count} contacts</p>
-              </div>
-            </div>
-            <div className="mt-auto flex gap-2">
-              <button 
-                onClick={() => router.push(`/contacts?group=${encodeURIComponent(group.name)}`)}
-                className="flex-1 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
-              >
-                View Contacts
-              </button>
-              <button 
-                onClick={() => setEditingGroup(group)}
-                className="w-9 h-9 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-input bg-background hover:bg-accent hover:text-accent-foreground"
-              >
-                <MoreHorizontal className="w-4 h-4" />
-              </button>
-            </div>
+      <div className="flex flex-col md:flex-row gap-8 flex-1 overflow-hidden">
+        {/* Left Column: Group List */}
+        <div className="w-full md:w-80 border rounded-2xl bg-card shadow-sm flex flex-col overflow-hidden shrink-0">
+          <div className="p-4 border-b bg-muted/30 font-bold text-sm tracking-wide uppercase text-muted-foreground">All Groups</div>
+          <div className="overflow-y-auto flex-1 p-2 space-y-1">
+            {groups.map((group: any) => {
+              const count = getContactsInGroup(group.name).length;
+              return (
+                <div 
+                  key={group.id} 
+                  onClick={() => setActiveGroup(group)}
+                  className={`p-3 rounded-xl flex items-center justify-between cursor-pointer transition-colors ${activeGroup?.id === group.id ? 'bg-primary/10 border-primary/20 border' : 'hover:bg-muted border border-transparent'}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${group.color || 'bg-slate-100 text-slate-600'}`}>
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <span className="font-semibold text-sm">{group.name}</span>
+                  </div>
+                  <span className="text-xs font-bold bg-background border px-2 py-0.5 rounded-full text-muted-foreground">{count}</span>
+                </div>
+              );
+            })}
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* Create Group Modal */}
-      {isCreateOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card text-card-foreground rounded-xl shadow-lg max-w-md w-full border border-border animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-border">
-              <h3 className="font-semibold text-lg">Create New Group</h3>
-              <button onClick={() => setIsCreateOpen(false)} className="text-muted-foreground hover:text-foreground">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6 space-y-5">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Group Name</label>
-                <input type="text" className="w-full h-9 px-3 rounded-md border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" placeholder="e.g. Mastermind Group" />
+        {/* Right Column: Group Details & Contacts */}
+        <div className="flex-1 border rounded-2xl bg-card shadow-sm flex flex-col overflow-hidden relative">
+          {activeGroup ? (
+            <>
+              <div className="p-6 border-b flex items-center justify-between bg-muted/10">
+                <div>
+                  <h2 className="text-2xl font-bold">{activeGroup.name}</h2>
+                  <p className="text-sm text-muted-foreground mt-1">{getContactsInGroup(activeGroup.name).length} members in this group</p>
+                </div>
+                <button 
+                  onClick={() => {
+                    deleteGroup(activeGroup.id);
+                    setActiveGroup(null);
+                  }}
+                  className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
               </div>
               
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Icon</label>
-                <select className="w-full h-9 px-3 rounded-md border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-                  {iconOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Theme Color</label>
-                <div className="flex gap-3 mt-2">
-                  {colorSwatches.map(color => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`w-8 h-8 rounded-full border-2 transition-transform ${selectedColor === color ? 'scale-110 border-foreground shadow-sm' : 'border-transparent hover:scale-105'}`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
+              <div className="p-6 flex-1 overflow-y-auto">
+                <h3 className="font-bold text-sm text-muted-foreground uppercase tracking-wider mb-4">Manage Members</h3>
+                <div className="space-y-2">
+                  {contacts.map((contact: any) => {
+                    const isInGroup = contact.tags?.includes(activeGroup.name);
+                    return (
+                      <div key={contact.id} className={`p-3 rounded-xl border flex items-center justify-between transition-colors ${isInGroup ? 'bg-primary/5 border-primary/30' : 'bg-background hover:bg-muted'}`}>
+                        <div className="flex items-center gap-3">
+                          <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} className="w-10 h-10 rounded-full bg-secondary" />
+                          <div>
+                            <div className="font-semibold text-sm">{contact.name}</div>
+                            <div className="text-xs text-muted-foreground">{contact.role}</div>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => toggleContactInGroup(contact)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${isInGroup ? 'bg-rose-100 text-rose-600 hover:bg-rose-200' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                        >
+                          {isInGroup ? 'Remove' : 'Add to Group'}
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
+              <Layers className="w-16 h-16 mb-4 opacity-20" />
+              <p className="font-semibold">Select a group to view and manage members</p>
             </div>
-            <div className="p-4 border-t border-border bg-muted/30 flex justify-end gap-2">
-              <button onClick={() => setIsCreateOpen(false)} className="px-4 py-2 text-sm font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors">Cancel</button>
-              <button onClick={() => {  setIsCreateOpen(false); }} className="px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">Create Group</button>
-            </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* Edit Group Modal */}
-      {editingGroup && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card text-card-foreground rounded-xl shadow-lg max-w-md w-full border border-border animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center p-6 border-b border-border">
-              <h3 className="font-semibold text-lg">Group Settings</h3>
-              <button onClick={() => setEditingGroup(null)} className="text-muted-foreground hover:text-foreground">
-                <X className="w-5 h-5" />
-              </button>
+      {/* New Group Modal */}
+      {showNewGroup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-card w-full max-w-md p-6 rounded-2xl shadow-xl border animate-in zoom-in-95">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">Create New Group</h2>
+              <button onClick={() => setShowNewGroup(false)} className="text-muted-foreground hover:bg-muted p-2 rounded-lg"><X className="w-5 h-5"/></button>
             </div>
-            <div className="p-6 space-y-5">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Group Name</label>
+            <form onSubmit={handleCreateGroup} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold uppercase text-muted-foreground mb-2 block">Group Name</label>
                 <input 
-                  defaultValue={editingGroup.name}
+                  autoFocus
+                  required
                   type="text" 
-                  className="w-full h-9 px-3 rounded-md border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" 
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  placeholder="e.g. Investors 2026" 
+                  className="w-full p-3 bg-background border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary" 
                 />
               </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Icon</label>
-                <select 
-                  defaultValue={editingGroup.icon}
-                  className="w-full h-9 px-3 rounded-md border border-input bg-transparent text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                >
-                  {iconOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                </select>
-              </div>
-            </div>
-            <div className="p-4 border-t border-border bg-muted/30 flex justify-between gap-2">
-              <button 
-                onClick={() => {  setEditingGroup(null); }} 
-                className="px-4 py-2 text-sm font-medium rounded-md text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-2"
-              >
-                <Trash2 className="w-4 h-4" /> Delete Group
+              <button type="submit" className="w-full py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:bg-primary/90 transition-colors">
+                Save Group
               </button>
-              <div className="flex gap-2">
-                <button onClick={() => setEditingGroup(null)} className="px-4 py-2 text-sm font-medium rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors">Cancel</button>
-                <button onClick={() => {  setEditingGroup(null); }} className="px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">Save Changes</button>
-              </div>
-            </div>
+            </form>
           </div>
         </div>
       )}
