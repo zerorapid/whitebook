@@ -34,7 +34,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose
         const isActive = pathname === item.href;
         return (
           <li key={item.name}>
-            <Link href={item.href} className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>
+            <Link href={item.href} onClick={onClose} className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>
               <Icon className="w-4 h-4" />
               {item.name}
               {item.name === 'AI Assistant' && <span className="ml-auto bg-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">2</span>}

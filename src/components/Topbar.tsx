@@ -1,14 +1,17 @@
 "use client";
-import { Bell, Search } from 'lucide-react';
+import { Bell, Search, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-export default function Topbar() {
+export default function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const pathname = usePathname();
   
   return (
     <header className="h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 flex items-center justify-between px-6">
-      <div className="flex-1 flex items-center md:hidden">
+      <div className="flex-1 flex items-center gap-3 md:hidden">
+        <button onClick={onMenuClick} className="p-2 -ml-2 rounded-lg hover:bg-muted text-foreground">
+          <Menu className="w-5 h-5" />
+        </button>
         <span className="font-bold tracking-tight">White Book</span>
       </div>
       
