@@ -95,7 +95,7 @@ export default function ContactsDirectory() {
             )}
             
             <div className="flex flex-col items-center text-center space-y-4">
-              <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} alt={contact.name} className="w-20 h-20 rounded-full bg-secondary border-4 border-background shadow-sm" />
+              <img src={contact.avatar || `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} alt={contact.name} className="w-20 h-20 rounded-full bg-secondary border-4 border-background shadow-sm" />
               <div className="space-y-1">
                 <h3 className="font-bold text-lg text-foreground tracking-tight">{contact.name}</h3>
                 <p className="text-sm font-medium text-primary">{contact.role}</p>

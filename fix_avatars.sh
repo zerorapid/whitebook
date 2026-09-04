@@ -1,3 +1,9 @@
+#!/bin/bash
+set -e
+cd /Users/Jayapalreddy/.gemini/antigravity/scratch/crm-os-next
+
+# 1. Update New Contact Page with Avatar Picker and File Upload
+cat << 'NEWCONTACT' > src/app/contacts/new/page.tsx
 "use client";
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -225,3 +231,23 @@ export default function NewContactPage() {
     </div>
   );
 }
+NEWCONTACT
+
+# 2. Update Image Tags Globally to respect `contact.avatar`
+node -e "
+const fs = require('fs');
+
+const replaceInFile = (file) => {
+  if (fs.existsSync(file)) {
+    let content = fs.readFileSync(file, 'utf8');
+    // Replace standard dicebear hardcoded strings with a check for contact.avatar
+    content = content.replace(
+      /\`https:\/\/api\.dicebear\.com\/7\.x\/micah\/svg\?seed=\\\$\{encodeURIComponent\(contact\.name\)\}&backgroundColor=transparent\`/g,
+      'contact.avatar || \\`https://api.dicebear.com/7.x/micah/svg?seed=\\${encodeURIComponent(contact.name)}&backgroundColor=transparent\\`'
+    );
+    fs.writeFileSync(file, content);
+  }
+};
+
+['src/app/contacts/page.tsx', 'src/app/contacts/[id]/page.tsx', 'src/app/groups/page.tsx'].forEach(replaceInFile);
+"

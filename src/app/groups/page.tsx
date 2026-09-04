@@ -201,7 +201,7 @@ export default function GroupsPage() {
                   {groupMembers.map((contact: any) => (
                     <div key={contact.id} className="p-3 rounded-xl border bg-background flex items-center justify-between hover:border-primary/30 transition-colors group">
                       <div className="flex items-center gap-3">
-                        <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} className="w-10 h-10 rounded-full bg-secondary" />
+                        <img src={contact.avatar || `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} className="w-10 h-10 rounded-full bg-secondary" />
                         <div>
                           <div className="font-semibold text-sm">{contact.name}</div>
                           <div className="text-xs text-muted-foreground">{contact.role} at {contact.company}</div>
@@ -289,7 +289,7 @@ export default function GroupsPage() {
                         className={`p-3 flex items-center justify-between cursor-pointer transition-colors hover:bg-muted/50 ${isSelected ? 'bg-primary/5' : ''}`}
                       >
                         <div className="flex items-center gap-3">
-                          <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} className="w-8 h-8 rounded-full bg-secondary" />
+                          <img src={contact.avatar || `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} className="w-8 h-8 rounded-full bg-secondary" />
                           <div className="font-semibold text-sm">{contact.name}</div>
                         </div>
                         <div className={`w-5 h-5 rounded border flex items-center justify-center ${isSelected ? 'bg-primary border-primary text-primary-foreground' : 'border-input bg-background'}`}>
@@ -366,7 +366,7 @@ export default function GroupsPage() {
                 return (
                   <div key={contact.id} className="p-3 rounded-xl border flex items-center justify-between bg-background">
                     <div className="flex items-center gap-3">
-                      <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} className="w-10 h-10 rounded-full bg-secondary" />
+                      <img src={contact.avatar || `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} className="w-10 h-10 rounded-full bg-secondary" />
                       <div>
                         <div className="font-semibold text-sm">{contact.name}</div>
                         <div className="text-xs text-muted-foreground">{contact.role} at {contact.company}</div>

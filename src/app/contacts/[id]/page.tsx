@@ -46,7 +46,7 @@ export default function ContactDetail({ params }: { params: { id: string } }) {
           <div className="relative flex justify-between items-end -mt-12 mb-4">
             <div className="relative">
               <img 
-                src={`https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} 
+                src={contact.avatar || `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} 
                 alt={contact.name} 
                 className="w-24 h-24 rounded-full bg-background border-4 border-background shadow-md" 
               />
