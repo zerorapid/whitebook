@@ -1,99 +1,111 @@
 "use client";
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Scan, Camera, Upload, CheckCircle2, ArrowRight } from 'lucide-react';
-import { useStore } from '@/lib/store';
+import { Camera, Image as ImageIcon, Loader2, ScanLine } from 'lucide-react';
 
 export default function ScannerPage() {
+  const [isScanning, setIsScanning] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  const { addContact } = useStore();
-  const [scanning, setScanning] = useState(false);
-  const [scanned, setScanned] = useState(false);
 
-  const handleScan = () => {
-    setScanning(true);
-    setTimeout(() => {
-      setScanning(false);
-      setScanned(true);
-    }, 2000);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64 = event.target?.result as string;
+      setImagePreview(base64);
+      await scanCard(base64);
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleSaveContact = () => {
-    addContact({
-      id: Date.now(),
-      name: "Alexander Pierce",
-      company: "Stark Industries",
-      role: "Director",
-      email: "alex@stark.com",
-      phone: "+1 (555) 019-2834",
-      location: "New York, NY",
-      tags: ["Scanned"],
-      lastContact: "Just now"
-    });
-    router.push('/contacts');
+  const scanCard = async (base64: string) => {
+    setIsScanning(true);
+    try {
+      const res = await fetch('/api/scanner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64 })
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        const params = new URLSearchParams();
+        if (data.name) params.append('name', data.name);
+        if (data.email) params.append('email', data.email);
+        if (data.phone) params.append('phone', data.phone);
+        if (data.company) params.append('company', data.company);
+        if (data.role) params.append('role', data.role);
+        
+        router.push(`/contacts/new?${params.toString()}`);
+      } else {
+        alert('Failed to extract details: ' + data.error);
+      }
+    } catch (err) {
+      alert('Network error while scanning.');
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 max-w-2xl mx-auto">
-      <div className="text-center space-y-4">
-        <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <Scan className="w-8 h-8" />
+    <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in duration-700 pb-12">
+      <div className="space-y-1.5 text-center">
+        <div className="w-16 h-16 bg-primary text-primary-foreground rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+          <ScanLine className="w-8 h-8" />
         </div>
-        <h1 className="text-4xl font-bold tracking-tight text-foreground">Business Card Scanner</h1>
-        <p className="text-muted-foreground text-sm font-medium">Snap a card and our AI will transcribe it into a structured contact in seconds.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Card Scanner</h1>
+        <p className="text-muted-foreground text-sm font-medium">Extract details instantly using Llama-3 Vision AI.</p>
       </div>
 
-      {!scanned ? (
-        <div className="rounded-3xl border-2 border-dashed border-border/60 bg-card/50 p-12 text-center hover:bg-muted/30 transition-colors cursor-pointer group" onClick={handleScan}>
-          {scanning ? (
-            <div className="space-y-4">
-              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <p className="text-sm font-semibold text-primary animate-pulse">Extracting contact details via AI...</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex justify-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-background border shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform"><Camera className="w-5 h-5 text-muted-foreground" /></div>
-                <div className="w-12 h-12 rounded-full bg-background border shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform"><Upload className="w-5 h-5 text-muted-foreground" /></div>
-              </div>
-              <div>
-                <p className="text-base font-semibold">Click to capture or upload card</p>
-                <p className="text-xs text-muted-foreground mt-1">Supports JPG, PNG, and PDF</p>
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="rounded-2xl border bg-card p-8 shadow-lg animate-in slide-in-from-bottom-4">
-          <div className="flex items-center gap-3 mb-6">
-            <CheckCircle2 className="w-6 h-6 text-emerald-500" />
-            <h3 className="text-lg font-bold">Transcription Complete</h3>
-          </div>
-          <div className="space-y-4 bg-muted/30 p-4 rounded-xl border">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Full Name</label>
-                <div className="font-medium">Alexander Pierce</div>
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Company</label>
-                <div className="font-medium">Stark Industries</div>
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Email</label>
-                <div className="font-medium text-primary">alex@stark.com</div>
-              </div>
-              <div>
-                <label className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Phone</label>
-                <div className="font-medium">+1 (555) 019-2834</div>
-              </div>
+      <div className="bg-card border rounded-3xl p-8 shadow-sm text-center">
+        <input 
+          type="file" 
+          accept="image/*" 
+          capture="environment" 
+          className="hidden" 
+          ref={fileInputRef}
+          onChange={handleFileChange}
+        />
+        
+        {imagePreview ? (
+          <div className="space-y-6">
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden border">
+              <img src={imagePreview} alt="Card Preview" className="object-cover w-full h-full" />
+              {isScanning && (
+                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white backdrop-blur-sm">
+                  <Loader2 className="w-10 h-10 animate-spin mb-4" />
+                  <p className="font-bold tracking-wider animate-pulse">EXTRACTING DATA...</p>
+                </div>
+              )}
             </div>
           </div>
-          <button onClick={handleSaveContact} className="w-full mt-6 bg-primary text-primary-foreground h-11 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
-            Save Contact <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+        ) : (
+          <div className="py-12 space-y-6">
+            <div className="flex justify-center gap-6">
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-32 h-32 rounded-3xl bg-secondary flex flex-col items-center justify-center gap-3 hover:bg-secondary/80 transition-colors shadow-sm"
+              >
+                <Camera className="w-8 h-8 text-primary" />
+                <span className="text-sm font-bold">Camera</span>
+              </button>
+              
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="w-32 h-32 rounded-3xl bg-secondary flex flex-col items-center justify-center gap-3 hover:bg-secondary/80 transition-colors shadow-sm"
+              >
+                <ImageIcon className="w-8 h-8 text-primary" />
+                <span className="text-sm font-bold">Gallery</span>
+              </button>
+            </div>
+            <p className="text-sm text-muted-foreground">Upload a photo of a business card.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,63 +1,111 @@
 "use client";
-import { Sparkles, Merge, UserCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Bot, Send, User, Sparkles } from 'lucide-react';
 import { useStore } from '@/lib/store';
 
 export default function AssistantPage() {
-  const { duplicates, resolveDuplicate } = useStore();
+  const { contacts } = useStore();
+  const [messages, setMessages] = useState([{ 
+    role: 'ai', 
+    text: "Hello! I am your White Book AI. I can analyze your network, find duplicates, or help you recall who works where. How can I help?" 
+  }]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    const userText = input.trim();
+    setInput('');
+    setMessages(prev => [...prev, { role: 'user', text: userText }]);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: userText, contacts })
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        setMessages(prev => [...prev, { role: 'ai', text: data.reply }]);
+      } else {
+        setMessages(prev => [...prev, { role: 'ai', text: `Error: ${data.error}` }]);
+      }
+    } catch (err) {
+      setMessages(prev => [...prev, { role: 'ai', text: "Failed to connect to the AI." }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 max-w-4xl">
-      <div className="space-y-1.5">
-        <h1 className="text-4xl font-bold tracking-tight text-foreground flex items-center gap-3">
-          <Sparkles className="w-8 h-8 text-primary" />
-          AI Assistant
-        </h1>
-        <p className="text-muted-foreground text-sm font-medium">Smart contact management: deduplicate, enrich, and clean your network.</p>
+    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-4xl mx-auto bg-card border rounded-3xl overflow-hidden shadow-sm animate-in fade-in duration-700">
+      
+      <div className="p-4 md:p-6 border-b flex items-center gap-4 bg-secondary/30">
+        <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
+          <Sparkles className="w-6 h-6 text-primary-foreground" />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold">Network Assistant</h1>
+          <p className="text-sm text-muted-foreground font-medium">Powered by Llama-3</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-2xl border bg-card p-6 shadow-sm">
-          <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center mb-4">
-            <Merge className="w-6 h-6" />
-          </div>
-          <h3 className="text-lg font-bold mb-1">Duplicate Management</h3>
-          <p className="text-sm text-muted-foreground mb-4">We found {duplicates.length} overlapping contacts across your accounts.</p>
-          
-          <div className="space-y-3">
-            {duplicates.map((dupe: any) => (
-              <div key={dupe.id} className="p-4 rounded-xl border bg-muted/30 flex items-center justify-between">
-                <div>
-                  <div className="font-semibold text-sm">{dupe.name} <span className="text-muted-foreground font-normal">matches</span> {dupe.match}</div>
-                  <div className="text-xs text-primary font-medium mt-1">{dupe.confidence} Match Confidence</div>
-                </div>
-                <button onClick={() => resolveDuplicate(dupe.id)} className="px-3 py-1.5 bg-background border shadow-sm rounded-lg text-xs font-semibold hover:bg-muted transition-colors">
-                  Merge
-                </button>
-              </div>
-            ))}
-            {duplicates.length === 0 && (
-              <div className="text-sm text-emerald-600 flex items-center gap-2 font-medium p-4 bg-emerald-50 rounded-xl">
-                <CheckCircle2 className="w-4 h-4" /> All contacts are deduplicated.
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="rounded-2xl border bg-card p-6 shadow-sm">
-          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4">
-            <UserCheck className="w-6 h-6" />
-          </div>
-          <h3 className="text-lg font-bold mb-1">Contact Enrichment</h3>
-          <p className="text-sm text-muted-foreground mb-4">AI automatically searches public profiles to fill in missing job titles and photos.</p>
-          <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-100 flex items-start gap-3">
-            <Sparkles className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-900">
-              <span className="font-semibold block mb-1">Auto-Enrichment is Active</span>
-              Your contacts are automatically updated daily with the latest LinkedIn and public data.
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+        {messages.map((msg, i) => (
+          <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-secondary' : 'bg-primary text-primary-foreground'}`}>
+              {msg.role === 'user' ? <User className="w-5 h-5 text-muted-foreground" /> : <Bot className="w-5 h-5" />}
+            </div>
+            <div className={`max-w-[80%] rounded-2xl p-4 text-sm ${msg.role === 'user' ? 'bg-secondary text-foreground rounded-tr-none' : 'bg-primary/10 border border-primary/20 text-foreground rounded-tl-none'}`}>
+              {msg.text.split('\n').map((line, j) => (
+                <p key={j} className={j > 0 ? 'mt-2' : ''}>{line}</p>
+              ))}
             </div>
           </div>
-        </div>
+        ))}
+        {isLoading && (
+          <div className="flex gap-4">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0 text-primary-foreground">
+              <Bot className="w-5 h-5" />
+            </div>
+            <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 rounded-tl-none flex items-center gap-2">
+              <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
+              <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-75" />
+              <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-150" />
+            </div>
+          </div>
+        )}
+        <div ref={endRef} />
       </div>
+
+      <div className="p-4 bg-secondary/30 border-t">
+        <form onSubmit={handleSend} className="relative flex items-center max-w-3xl mx-auto">
+          <input
+            type="text"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            placeholder="Ask about your contacts or request deduplication..."
+            className="w-full bg-background border rounded-full py-4 pl-6 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+          />
+          <button 
+            type="submit" 
+            disabled={isLoading || !input.trim()}
+            className="absolute right-2 w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center hover:bg-primary/90 disabled:opacity-50 transition-all"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </form>
+      </div>
+
     </div>
   );
 }

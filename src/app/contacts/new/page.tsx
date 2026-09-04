@@ -1,12 +1,18 @@
 "use client";
 import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Upload, RefreshCw, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
 
+import { Suspense } from 'react';
 export default function NewContactPage() {
+  return <Suspense fallback={<div className="p-8 text-center">Loading...</div>}><NewContactForm /></Suspense>;
+}
+
+function NewContactForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { addContact } = useStore();
   
   const [name, setName] = useState('');
