@@ -50,7 +50,7 @@ export default function ContactsDirectory() {
           <p className="text-muted-foreground text-sm font-medium">Manage and search your professional network.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/contacts" className="inline-flex items-center justify-center rounded-full text-sm font-medium transition-all bg-foreground text-background hover:bg-foreground/90 hover:scale-105 active:scale-95 h-10 px-5 shadow-lg shadow-black/5">
+          <Link href="/contacts/new" className="inline-flex items-center justify-center rounded-full text-sm font-medium transition-all bg-foreground text-background hover:bg-foreground/90 hover:scale-105 active:scale-95 h-10 px-5 shadow-lg shadow-black/5">
             <Plus className="w-4 h-4 mr-2" />
             New Contact
           </Link>
