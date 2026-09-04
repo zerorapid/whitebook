@@ -8,33 +8,35 @@ export default function MapPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  // Snazzy Maps JSON - "Uber Dark Mode" Aesthetic
-  const uberMapStyle = [
-    { "featureType": "all", "elementType": "labels.text.fill", "stylers": [{ "saturation": 36 }, { "color": "#333333" }, { "lightness": 40 }] },
-    { "featureType": "all", "elementType": "labels.text.stroke", "stylers": [{ "visibility": "on" }, { "color": "#ffffff" }, { "lightness": 16 }] },
-    { "featureType": "all", "elementType": "labels.icon", "stylers": [{ "visibility": "off" }] },
-    { "featureType": "administrative", "elementType": "geometry.fill", "stylers": [{ "color": "#fefefe" }, { "lightness": 20 }] },
-    { "featureType": "administrative", "elementType": "geometry.stroke", "stylers": [{ "color": "#fefefe" }, { "lightness": 17 }, { "weight": 1.2 }] },
-    { "featureType": "landscape", "elementType": "geometry", "stylers": [{ "color": "#f5f5f5" }, { "lightness": 20 }] },
-    { "featureType": "poi", "elementType": "geometry", "stylers": [{ "color": "#f5f5f5" }, { "lightness": 21 }] },
-    { "featureType": "poi.park", "elementType": "geometry", "stylers": [{ "color": "#dedede" }, { "lightness": 21 }] },
-    { "featureType": "road.highway", "elementType": "geometry.fill", "stylers": [{ "color": "#ffffff" }, { "lightness": 17 }] },
-    { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#ffffff" }, { "lightness": 29 }, { "weight": 0.2 }] },
-    { "featureType": "road.arterial", "elementType": "geometry", "stylers": [{ "color": "#ffffff" }, { "lightness": 18 }] },
-    { "featureType": "road.local", "elementType": "geometry", "stylers": [{ "color": "#ffffff" }, { "lightness": 16 }] },
-    { "featureType": "transit", "elementType": "geometry", "stylers": [{ "color": "#f2f2f2" }, { "lightness": 19 }] },
-    { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#e9e9e9" }, { "lightness": 17 }] }
+  // Pure Black & White minimalist vector style (matching the reference UI)
+  const bAndWStyle = [
+    { "featureType": "all", "elementType": "labels", "stylers": [{ "visibility": "off" }] },
+    { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#ffffff" }] },
+    { "featureType": "landscape", "elementType": "geometry", "stylers": [{ "color": "#ffffff" }] },
+    { "featureType": "poi", "elementType": "geometry", "stylers": [{ "color": "#ffffff" }] },
+    { "featureType": "administrative", "elementType": "geometry", "stylers": [{ "visibility": "off" }] },
+    { "featureType": "transit", "elementType": "geometry", "stylers": [{ "color": "#ffffff" }] },
+    
+    // Stark black lines for major highways
+    { "featureType": "road.highway", "elementType": "geometry.fill", "stylers": [{ "color": "#ffffff" }] },
+    { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#000000" }, { "weight": 2.5 }] },
+    
+    // Dark grey lines for arterial roads
+    { "featureType": "road.arterial", "elementType": "geometry.fill", "stylers": [{ "color": "#ffffff" }] },
+    { "featureType": "road.arterial", "elementType": "geometry.stroke", "stylers": [{ "color": "#333333" }, { "weight": 1.5 }] },
+    
+    // Light grey lines for local roads
+    { "featureType": "road.local", "elementType": "geometry.fill", "stylers": [{ "color": "#ffffff" }] },
+    { "featureType": "road.local", "elementType": "geometry.stroke", "stylers": [{ "color": "#888888" }, { "weight": 1.0 }] }
   ];
 
   useEffect(() => {
-    // Inject Google Maps Script
     const loadGoogleMaps = () => {
       if (window.google?.maps) {
         initMap();
         return;
       }
       const script = document.createElement('script');
-      // Using no API key for now (shows developer watermark, but supports custom Snazzy styling perfectly)
       script.src = `https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places`;
       script.async = true;
       script.defer = true;
@@ -48,14 +50,13 @@ export default function MapPage() {
       const map = new window.google.maps.Map(mapRef.current, {
         center: { lat: 40.7128, lng: -74.0060 }, // NYC Center
         zoom: 13,
-        styles: uberMapStyle,
-        disableDefaultUI: true, // Removes default Google controls for that clean Uber look
+        styles: bAndWStyle,
+        disableDefaultUI: true, // Clean look
         zoomControl: false,
+        backgroundColor: '#ffffff'
       });
 
-      // Add custom "Uber-style" sleek markers for contacts
       contacts.forEach((contact: any, i: number) => {
-        // Spread contacts slightly around NYC for demonstration
         const latOffset = (Math.random() - 0.5) * 0.05;
         const lngOffset = (Math.random() - 0.5) * 0.05;
         
@@ -66,7 +67,7 @@ export default function MapPage() {
           icon: {
             path: window.google.maps.SymbolPath.CIRCLE,
             scale: 8,
-            fillColor: contact.tags.includes('VIP') ? '#f59e0b' : '#3b82f6', // Amber for VIP, Blue for regular
+            fillColor: contact.tags.includes('VIP') ? '#000000' : '#888888', // Black & Grey dots to match the aesthetic
             fillOpacity: 1,
             strokeColor: '#ffffff',
             strokeWeight: 2,
@@ -87,27 +88,26 @@ export default function MapPage() {
           <MapIcon className="w-8 h-8 text-primary" />
           Network Map
         </h1>
-        <p className="text-muted-foreground text-sm font-medium">Live geographic distribution powered by Google Maps (Uber Style).</p>
+        <p className="text-muted-foreground text-sm font-medium">Live geographic distribution mapped in stark contrast.</p>
       </div>
 
-      <div className="flex-1 rounded-3xl border bg-card relative overflow-hidden shadow-xl ring-1 ring-white/10">
+      <div className="flex-1 rounded-3xl border border-border/60 bg-white relative overflow-hidden shadow-sm ring-1 ring-black/5">
         {!mapLoaded && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-card z-10 text-foreground">
-            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-10 text-black">
+            <div className="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin mb-4"></div>
             <p className="text-sm font-semibold">Loading Map Data...</p>
           </div>
         )}
         
-        {/* The Google Map Container */}
-        <div ref={mapRef} className="w-full h-full" />
+        <div ref={mapRef} className="w-full h-full bg-white" />
         
-        {/* Floating Uber-style Controls */}
+        {/* Floating Controls */}
         <div className="absolute bottom-8 left-8 z-20">
-          <div className="bg-background/90 backdrop-blur-xl p-5 rounded-2xl border shadow-2xl max-w-sm">
+          <div className="bg-white/90 backdrop-blur-xl p-5 rounded-2xl border shadow-xl max-w-sm text-black">
             <h3 className="font-bold text-base mb-1">Live Directory</h3>
-            <p className="text-sm text-muted-foreground mb-4">Showing {contacts.length} active contacts in this region.</p>
+            <p className="text-sm text-gray-500 mb-4">Showing {contacts.length} active contacts in this region.</p>
             <div className="flex gap-2">
-              <button className="flex-1 flex items-center justify-center py-2.5 bg-foreground text-background rounded-xl text-sm font-bold hover:bg-foreground/90 transition-colors shadow-md">
+              <button className="flex-1 flex items-center justify-center py-2.5 bg-black text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-md">
                 <Crosshair className="w-4 h-4 mr-2" /> Locate Me
               </button>
             </div>
@@ -116,14 +116,14 @@ export default function MapPage() {
 
         {/* Legend */}
         <div className="absolute top-8 right-8 z-20">
-          <div className="bg-background/90 backdrop-blur-xl px-4 py-3 rounded-2xl border shadow-xl flex flex-col gap-2">
+          <div className="bg-white/90 backdrop-blur-xl px-4 py-3 rounded-2xl border shadow-xl flex flex-col gap-2 text-black">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-blue-500 border border-white"></div>
-              <span className="text-xs font-semibold">Standard</span>
+              <div className="w-3 h-3 rounded-full bg-gray-400 border border-white"></div>
+              <span className="text-xs font-bold">Standard</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-amber-500 border border-white"></div>
-              <span className="text-xs font-semibold">VIP / Investor</span>
+              <div className="w-3 h-3 rounded-full bg-black border border-white"></div>
+              <span className="text-xs font-bold">VIP / Investor</span>
             </div>
           </div>
         </div>
