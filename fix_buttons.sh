@@ -1,3 +1,9 @@
+#!/bin/bash
+set -e
+cd /Users/Jayapalreddy/.gemini/antigravity/scratch/crm-os-next
+
+# 1. Fix Scanner Page 'Save Contact' Button
+cat << 'SCANNER' > src/app/scanner/page.tsx
 "use client";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -97,3 +103,29 @@ export default function ScannerPage() {
     </div>
   );
 }
+SCANNER
+
+# 2. Fix Contact Profile "Save Note" Button
+node -e "
+const fs = require('fs');
+let content = fs.readFileSync('src/app/contacts/[id]/page.tsx', 'utf8');
+
+// Add the updateContact function from useStore
+content = content.replace('const { contacts } = useStore();', 'const { contacts, updateContact } = useStore();');
+
+// Add a handleSaveNote function
+const saveNoteFunc = \`
+  const handleSaveNote = () => {
+    if (!newNote.trim()) return;
+    const updatedNotes = (contact.notes ? contact.notes + '\\n\\n' : '') + newNote;
+    updateContact(contact.id, { notes: updatedNotes });
+    setNewNote('');
+  };
+\`;
+content = content.replace('if (!contact) return notFound();', saveNoteFunc + '\n  if (!contact) return notFound();');
+
+// Attach the handleSaveNote function to the button
+content = content.replace('<button className=\"px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors\">\\n                    Save Note', '<button onClick={handleSaveNote} className=\"px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors\">\\n                    Save Note');
+
+fs.writeFileSync('src/app/contacts/[id]/page.tsx', content);
+"

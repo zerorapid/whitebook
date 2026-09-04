@@ -10,11 +10,21 @@ import { notFound } from 'next/navigation';
 import { useStore } from '@/lib/store';
 
 export default function ContactDetail({ params }: { params: { id: string } }) {
-  const { contacts } = useStore();
+  const { contacts, updateContact } = useStore();
   const contact = contacts.find((c: any) => c.id === parseInt(params.id));
   
   const [activeTab, setActiveTab] = useState('notes');
   const [newNote, setNewNote] = useState('');
+
+  
+  const handleSaveNote = () => {
+    if (!newNote.trim()) return;
+    const updatedNotes = (contact.notes ? contact.notes + '
+
+' : '') + newNote;
+    updateContact(contact.id, { notes: updatedNotes });
+    setNewNote('');
+  };
 
   if (!contact) return notFound();
 
@@ -125,7 +135,7 @@ export default function ContactDetail({ params }: { params: { id: string } }) {
                   onChange={(e) => setNewNote(e.target.value)}
                 ></textarea>
                 <div className="flex justify-end mt-3">
-                  <button className="px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors">
+                  <button onClick={handleSaveNote} className="px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors">
                     Save Note
                   </button>
                 </div>
