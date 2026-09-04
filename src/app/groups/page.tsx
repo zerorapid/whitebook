@@ -1,6 +1,6 @@
 "use client";
-import { useState } from 'react';
-import { Layers, Plus, Users, Trash2, Edit2, X, Check } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Layers, Plus, Users, Trash2, Edit2, X, Search, UserPlus, Check } from 'lucide-react';
 import { useStore } from '@/lib/store';
 
 export default function GroupsPage() {
@@ -9,12 +9,34 @@ export default function GroupsPage() {
   
   // Modals state
   const [showNewGroup, setShowNewGroup] = useState(false);
+  const [showAddMember, setShowAddMember] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [memberSearchQuery, setMemberSearchQuery] = useState('');
 
   // Find contacts that belong to a group (by tag)
   const getContactsInGroup = (groupName: string) => {
     return contacts.filter((c: any) => c.tags?.includes(groupName));
   };
+
+  // The members of the currently selected group
+  const groupMembers = useMemo(() => {
+    if (!activeGroup) return [];
+    const members = getContactsInGroup(activeGroup.name);
+    if (!memberSearchQuery.trim()) return members;
+    return members.filter((m: any) => m.name.toLowerCase().includes(memberSearchQuery.toLowerCase()));
+  }, [activeGroup, contacts, memberSearchQuery]);
+
+  // The search results for adding NEW members (searches the entire directory)
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    return contacts
+      .filter((c: any) => 
+        c.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        c.company.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .slice(0, 10); // Limit to top 10 results for performance with 1000+ contacts
+  }, [contacts, searchQuery]);
 
   // Add/Remove contact from active group
   const toggleContactInGroup = (contact: any) => {
@@ -43,6 +65,7 @@ export default function GroupsPage() {
     addGroup(newGroup);
     setNewGroupName('');
     setShowNewGroup(false);
+    setActiveGroup(newGroup); // Auto-select the new group
   };
 
   return (
@@ -57,7 +80,7 @@ export default function GroupsPage() {
         </div>
         <button 
           onClick={() => setShowNewGroup(true)}
-          className="inline-flex items-center justify-center rounded-full text-sm font-medium transition-all bg-foreground text-background hover:bg-foreground/90 h-10 px-5"
+          className="inline-flex items-center justify-center rounded-full text-sm font-medium transition-all bg-foreground text-background hover:bg-foreground/90 h-10 px-5 shadow-sm"
         >
           <Plus className="w-4 h-4 mr-2" />
           Create Group
@@ -75,7 +98,7 @@ export default function GroupsPage() {
                 <div 
                   key={group.id} 
                   onClick={() => setActiveGroup(group)}
-                  className={`p-3 rounded-xl flex items-center justify-between cursor-pointer transition-colors ${activeGroup?.id === group.id ? 'bg-primary/10 border-primary/20 border' : 'hover:bg-muted border border-transparent'}`}
+                  className={`p-3 rounded-xl flex items-center justify-between cursor-pointer transition-colors ${activeGroup?.id === group.id ? 'bg-primary/10 border-primary/20 border shadow-sm' : 'hover:bg-muted border border-transparent'}`}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${group.color || 'bg-slate-100 text-slate-600'}`}>
@@ -94,45 +117,75 @@ export default function GroupsPage() {
         <div className="flex-1 border rounded-2xl bg-card shadow-sm flex flex-col overflow-hidden relative">
           {activeGroup ? (
             <>
+              {/* Group Header */}
               <div className="p-6 border-b flex items-center justify-between bg-muted/10">
                 <div>
                   <h2 className="text-2xl font-bold">{activeGroup.name}</h2>
                   <p className="text-sm text-muted-foreground mt-1">{getContactsInGroup(activeGroup.name).length} members in this group</p>
                 </div>
-                <button 
-                  onClick={() => {
-                    deleteGroup(activeGroup.id);
-                    setActiveGroup(null);
-                  }}
-                  className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => {
+                      setSearchQuery('');
+                      setShowAddMember(true);
+                    }}
+                    className="px-4 py-2 bg-primary text-primary-foreground font-semibold text-sm rounded-lg hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2"
+                  >
+                    <UserPlus className="w-4 h-4" /> Add Members
+                  </button>
+                  <button 
+                    onClick={() => {
+                      deleteGroup(activeGroup.id);
+                      setActiveGroup(null);
+                    }}
+                    className="p-2 text-muted-foreground hover:bg-rose-50 hover:text-rose-500 rounded-lg transition-colors border shadow-sm bg-background"
+                    title="Delete Group"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               
-              <div className="p-6 flex-1 overflow-y-auto">
-                <h3 className="font-bold text-sm text-muted-foreground uppercase tracking-wider mb-4">Manage Members</h3>
-                <div className="space-y-2">
-                  {contacts.map((contact: any) => {
-                    const isInGroup = contact.tags?.includes(activeGroup.name);
-                    return (
-                      <div key={contact.id} className={`p-3 rounded-xl border flex items-center justify-between transition-colors ${isInGroup ? 'bg-primary/5 border-primary/30' : 'bg-background hover:bg-muted'}`}>
-                        <div className="flex items-center gap-3">
-                          <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} className="w-10 h-10 rounded-full bg-secondary" />
-                          <div>
-                            <div className="font-semibold text-sm">{contact.name}</div>
-                            <div className="text-xs text-muted-foreground">{contact.role}</div>
-                          </div>
+              {/* Group Members List */}
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="p-4 border-b">
+                  <div className="relative">
+                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
+                    <input 
+                      type="text" 
+                      placeholder="Search within this group..." 
+                      value={memberSearchQuery}
+                      onChange={e => setMemberSearchQuery(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 bg-background border rounded-lg text-sm focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                  {groupMembers.map((contact: any) => (
+                    <div key={contact.id} className="p-3 rounded-xl border bg-background flex items-center justify-between hover:border-primary/30 transition-colors group">
+                      <div className="flex items-center gap-3">
+                        <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} className="w-10 h-10 rounded-full bg-secondary" />
+                        <div>
+                          <div className="font-semibold text-sm">{contact.name}</div>
+                          <div className="text-xs text-muted-foreground">{contact.role} at {contact.company}</div>
                         </div>
-                        <button 
-                          onClick={() => toggleContactInGroup(contact)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${isInGroup ? 'bg-rose-100 text-rose-600 hover:bg-rose-200' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
-                        >
-                          {isInGroup ? 'Remove' : 'Add to Group'}
-                        </button>
                       </div>
-                    );
-                  })}
+                      <button 
+                        onClick={() => toggleContactInGroup(contact)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-muted-foreground hover:bg-rose-100 hover:text-rose-600 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  {groupMembers.length === 0 && (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Users className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                      <p className="font-medium">No members found.</p>
+                      <button onClick={() => setShowAddMember(true)} className="text-primary text-sm font-semibold mt-2 hover:underline">Add someone to this group</button>
+                    </div>
+                  )}
                 </div>
               </div>
             </>
@@ -173,6 +226,69 @@ export default function GroupsPage() {
           </div>
         </div>
       )}
+
+      {/* Add Member Modal (Scalable for 1000s of contacts) */}
+      {showAddMember && activeGroup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-card w-full max-w-lg p-6 rounded-2xl shadow-xl border animate-in zoom-in-95 flex flex-col max-h-[80vh]">
+            <div className="flex items-center justify-between mb-4 shrink-0">
+              <h2 className="text-xl font-bold">Add to {activeGroup.name}</h2>
+              <button onClick={() => setShowAddMember(false)} className="text-muted-foreground hover:bg-muted p-2 rounded-lg"><X className="w-5 h-5"/></button>
+            </div>
+            
+            <div className="relative mb-4 shrink-0">
+              <Search className="w-5 h-5 absolute left-3 top-3 text-muted-foreground" />
+              <input 
+                autoFocus
+                type="text" 
+                placeholder="Search entire directory by name or company..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-background border rounded-xl text-sm focus:ring-2 focus:ring-primary/20 shadow-sm" 
+              />
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-2">
+              {!searchQuery.trim() ? (
+                <div className="py-8 text-center text-muted-foreground text-sm font-medium">
+                  Type a name or company to search your directory.
+                </div>
+              ) : searchResults.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground text-sm font-medium">
+                  No contacts found matching "{searchQuery}"
+                </div>
+              ) : (
+                searchResults.map((contact: any) => {
+                  const isInGroup = contact.tags?.includes(activeGroup.name);
+                  return (
+                    <div key={contact.id} className="p-3 rounded-xl border flex items-center justify-between bg-background">
+                      <div className="flex items-center gap-3">
+                        <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`} className="w-10 h-10 rounded-full bg-secondary" />
+                        <div>
+                          <div className="font-semibold text-sm">{contact.name}</div>
+                          <div className="text-xs text-muted-foreground">{contact.role} at {contact.company}</div>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => toggleContactInGroup(contact)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${isInGroup ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
+                      >
+                        {isInGroup ? 'Added' : 'Add'}
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            <div className="mt-4 pt-4 border-t shrink-0">
+              <button onClick={() => setShowAddMember(false)} className="w-full py-2.5 bg-secondary text-secondary-foreground font-bold rounded-xl hover:bg-secondary/80 transition-colors">
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+GROUPS
