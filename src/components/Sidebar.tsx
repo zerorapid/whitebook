@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  Users, Layers, Settings, LifeBuoy,
+  Users, Layers, Settings, LifeBuoy, LayoutDashboard,
   Scan, Sparkles, Map, RefreshCw
 } from 'lucide-react';
 
@@ -10,6 +10,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose
   const pathname = usePathname();
 
   const navigation = [
+    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Directory', href: '/contacts', icon: Users },
     { name: 'Map View', href: '/map', icon: Map },
     { name: 'Groups & Tags', href: '/groups', icon: Layers },
