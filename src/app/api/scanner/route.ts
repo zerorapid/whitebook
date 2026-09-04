@@ -25,7 +25,7 @@ export async function POST(req: Request) {
           ]
         }
       ],
-      model: 'llama-3.2-11b-vision-preview',
+      model: 'qwen/qwen3.8-27b',
       temperature: 0.1,
       max_tokens: 500,
     });

@@ -20,9 +20,9 @@ export async function POST(req: Request) {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt }
       ],
-      model: 'llama-3.3-70b-versatile',
+      model: 'qwen/qwen3.8-27b',
       temperature: 0.2,
-      max_tokens: 1000,
+      max_tokens: 500,
     });
 
     return NextResponse.json({ reply: chatCompletion.choices[0]?.message?.content || 'No response' });
