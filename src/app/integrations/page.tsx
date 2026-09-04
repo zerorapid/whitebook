@@ -1,5 +1,5 @@
 "use client";
-import { RefreshCw, Mail, Calendar, Linkedin, Phone } from 'lucide-react';
+import { RefreshCw, Mail, Calendar, Globe, Phone } from 'lucide-react';
 import { useState } from 'react';
 
 export default function IntegrationsPage() {
@@ -12,7 +12,7 @@ export default function IntegrationsPage() {
   const platforms = [
     { name: "Google Contacts", icon: Mail, desc: "Two-way sync with your Google account.", color: "text-red-500" },
     { name: "Outlook", icon: Calendar, desc: "Import and sync Outlook contacts.", color: "text-blue-500" },
-    { name: "LinkedIn", icon: Linkedin, desc: "Enrich contacts with LinkedIn data.", color: "text-blue-700" },
+    { name: "LinkedIn", icon: Globe, desc: "Enrich contacts with LinkedIn data.", color: "text-blue-700" },
     { name: "iCloud Contacts", icon: Phone, desc: "Sync with your Apple devices.", color: "text-gray-500" }
   ];
 
