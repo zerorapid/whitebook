@@ -1,5 +1,6 @@
 "use client";
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from './supabase';
 import { contacts as initialContacts, groups as initialGroups } from './data';
 
 const StoreContext = createContext<any>(null);
@@ -15,6 +16,26 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [contacts, setContacts] = useState(enhancedContacts);
   const [groups, setGroups] = useState(initialGroups);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const { data: contactsData, error: contactsError } = await supabase.from('contacts').select('*');
+        if (contactsData && contactsData.length > 0) {
+          setContacts(contactsData);
+        }
+        
+        const { data: groupsData, error: groupsError } = await supabase.from('groups').select('*');
+        if (groupsData && groupsData.length > 0) {
+          setGroups(groupsData);
+        }
+      } catch (err) {
+        console.error('Supabase load error:', err);
+      }
+    }
+    loadData();
+  }, []);
+
   
   const [duplicates, setDuplicates] = useState([
     { id: 1, name: "David Kim", match: "David K.", confidence: "98%" },
@@ -28,9 +49,22 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <StoreContext.Provider value={{
       contacts,
-      addContact: (c: any) => setContacts([...contacts, c]),
-      updateContact: (id: number, data: any) => setContacts(contacts.map((c: any) => c.id === id ? { ...c, ...data } : c)),
-      deleteContact: (id: number) => setContacts(contacts.filter((c: any) => c.id !== id)),
+      addContact: async (c: any) => {
+        setContacts([...contacts, c]); // Optimistic UI
+        const payload = { ...c };
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) payload.user_id = session.user.id;
+        if (typeof payload.id === 'number') delete payload.id;
+        await supabase.from('contacts').insert([payload]);
+      },
+      updateContact: async (id: any, data: any) => {
+        setContacts(contacts.map((c: any) => c.id === id ? { ...c, ...data } : c));
+        await supabase.from('contacts').update(data).eq('id', id);
+      },
+      deleteContact: async (id: any) => {
+        setContacts(contacts.filter((c: any) => c.id !== id));
+        await supabase.from('contacts').delete().eq('id', id);
+      },
       
       groups,
       addGroup: (g: any, initialContactIds: number[] = []) => {

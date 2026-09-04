@@ -1,13 +1,20 @@
 "use client";
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
+import AuthGuard from './AuthGuard';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 
 export default function ClientShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-muted/40">
+    <AuthGuard>
+      {pathname === "/login" ? (
+        children
+      ) : (
+        <div className="flex h-screen overflow-hidden bg-muted/40">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
       {/* Mobile Overlay */}
@@ -25,5 +32,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
         </main>
       </div>
     </div>
+      )}
+    </AuthGuard>
   );
 }

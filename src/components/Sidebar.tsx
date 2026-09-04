@@ -1,6 +1,7 @@
 "use client";
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import { 
   Users, Layers, Settings, LifeBuoy, LayoutDashboard,
   Scan, Sparkles, Map, RefreshCw
@@ -8,6 +9,11 @@ import {
 
 export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -78,6 +84,12 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose
           <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-white/50">System</div>
           {renderLinks(system)}
         </div>
+      </div>
+      
+      <div className="px-6 pb-6">
+        <button onClick={handleLogout} className="w-full py-2 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-lg text-sm font-medium transition-colors">
+          Log Out
+        </button>
       </div>
     </div>
   );
