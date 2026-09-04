@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// Initialize dynamically to prevent build-time crashes on Vercel
+const getGroqClient = () => new Groq({ apiKey: process.env.GROQ_API_KEY || 'dummy_key_for_build' });
 
 export async function POST(req: Request) {
   try {
@@ -12,6 +13,7 @@ export async function POST(req: Request) {
     Extract the following details and return ONLY a raw JSON object with these exact keys: name, email, phone, company, role.
     If a field is not found, leave it as an empty string. DO NOT wrap the output in markdown blocks, just raw JSON.`;
 
+    const groq = getGroqClient();
     const chatCompletion = await groq.chat.completions.create({
       messages: [
         { role: 'system', content: systemPrompt },

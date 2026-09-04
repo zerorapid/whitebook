@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// Initialize dynamically to prevent build-time crashes on Vercel
+const getGroqClient = () => new Groq({ apiKey: process.env.GROQ_API_KEY || 'dummy_key_for_build' });
 
 export async function POST(req: Request) {
   try {
@@ -13,6 +14,7 @@ export async function POST(req: Request) {
     
     Answer the user's questions about their contacts. If they ask to find duplicates, analyze the names and emails and list them clearly. Be concise, professional, and directly helpful. Do not output markdown code blocks for normal text.`;
 
+    const groq = getGroqClient();
     const chatCompletion = await groq.chat.completions.create({
       messages: [
         { role: 'system', content: systemPrompt },
