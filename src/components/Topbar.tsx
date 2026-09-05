@@ -32,11 +32,8 @@ export default function Topbar() {
           <input 
             type="text" 
             placeholder="Search directory..." 
-            className="w-full h-9 pl-9 pr-12 rounded-full bg-muted/50 border-transparent focus:bg-background focus:border-border focus:ring-2 focus:ring-primary/10 text-sm font-medium transition-all"
+            className="w-full h-9 pl-9 pr-4 rounded-full bg-muted/50 border-transparent focus:bg-background focus:border-border focus:ring-2 focus:ring-primary/10 text-sm font-medium transition-all"
           />
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground bg-muted border border-border/50 px-1.5 py-0.5 rounded flex items-center gap-0.5 pointer-events-none">
-            <span className="font-sans">⌘</span>K
-          </div>
         </div>
       </div>
 

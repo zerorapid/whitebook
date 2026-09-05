@@ -47,15 +47,15 @@ export default function AssistantPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-4xl mx-auto bg-card border rounded-3xl overflow-hidden shadow-sm animate-in fade-in duration-700">
+    <div className="flex flex-col h-[calc(100dvh-11rem)] md:h-[calc(100vh-9rem)] max-w-4xl mx-auto bg-card border border-border/60 rounded-3xl overflow-hidden shadow-sm animate-in fade-in duration-500">
       
-      <div className="p-4 md:p-6 border-b flex items-center gap-4 bg-secondary/30">
-        <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg">
+      <div className="p-4 md:p-6 border-b border-border/40 flex items-center gap-4 bg-muted/10">
+        <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-md">
           <Sparkles className="w-6 h-6 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Network Assistant</h1>
-          <p className="text-sm text-muted-foreground font-medium">Powered by Llama-3</p>
+          <h1 className="text-xl font-extrabold tracking-tight">Network Assistant</h1>
+          <p className="text-sm text-muted-foreground font-medium">Powered by Qwen AI</p>
         </div>
       </div>
 
