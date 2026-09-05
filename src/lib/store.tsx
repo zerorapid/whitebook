@@ -67,45 +67,73 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       },
       
       groups,
-      addGroup: (g: any, initialContactIds: number[] = []) => {
+      addGroup: async (g: any, initialContactIds: number[] = []) => {
         setGroups([...groups, g]);
+        
+        // Save to Supabase
+        const payload = { ...g };
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) payload.user_id = session.user.id;
+        if (typeof payload.id === 'number') delete payload.id;
+        
+        await supabase.from('groups').insert([payload]);
+
         // Instantly add these contacts to the group
         if (initialContactIds.length > 0) {
           setContacts(contacts.map((c: any) => {
             if (initialContactIds.includes(c.id)) {
               const newTags = c.tags ? [...c.tags, g.name] : [g.name];
-              return { ...c, tags: Array.from(new Set(newTags)) };
+              const uniqueTags = Array.from(new Set(newTags));
+              
+              // Sync contact tags to supabase in the background
+              supabase.from('contacts').update({ tags: uniqueTags }).eq('id', c.id).then();
+              
+              return { ...c, tags: uniqueTags };
             }
             return c;
           }));
         }
       },
-      updateGroup: (id: number, newName: string) => {
+      updateGroup: async (id: number, newName: string) => {
         const groupToEdit = groups.find((g: any) => g.id === id);
         if (!groupToEdit) return;
         
         const oldName = groupToEdit.name;
         
-        // Update group name
+        // Update group name locally and remotely
         setGroups(groups.map((g: any) => g.id === id ? { ...g, name: newName } : g));
+        await supabase.from('groups').update({ name: newName }).eq('id', id);
         
         // Cascade tag change to all members
         setContacts(contacts.map((c: any) => {
           if (c.tags?.includes(oldName)) {
             const newTags = c.tags.map((t: string) => t === oldName ? newName : t);
+            
+            // Sync tag cascade to supabase
+            supabase.from('contacts').update({ tags: newTags }).eq('id', c.id).then();
+            
             return { ...c, tags: newTags };
           }
           return c;
         }));
       },
-      deleteGroup: (id: number) => {
+      deleteGroup: async (id: number) => {
         const groupToDelete = groups.find((g: any) => g.id === id);
         setGroups(groups.filter((g: any) => g.id !== id));
+        
+        // Delete from Supabase
+        await supabase.from('groups').delete().eq('id', id);
+
         // Remove the tag from all contacts
         if (groupToDelete) {
           setContacts(contacts.map((c: any) => {
             if (c.tags?.includes(groupToDelete.name)) {
-              return { ...c, tags: c.tags.filter((t: string) => t !== groupToDelete.name) };
+              const newTags = c.tags.filter((t: string) => t !== groupToDelete.name);
+              
+              // Sync tag removal to supabase
+              supabase.from('contacts').update({ tags: newTags }).eq('id', c.id).then();
+              
+              return { ...c, tags: newTags };
             }
             return c;
           }));
