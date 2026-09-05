@@ -15,7 +15,6 @@ export default function MenuPage() {
   };
 
   const moreFeatures = [
-    { name: 'Map View', href: '/map', icon: Map, desc: 'View contacts geographically' },
     { name: 'AI Assistant', href: '/assistant', icon: Sparkles, badge: 'AI', desc: 'Chat with your smart assistant' },
     { name: 'Groups & Tags', href: '/groups', icon: Layers, desc: 'Manage your contact lists' },
     { name: 'Integrations', href: '/integrations', icon: RefreshCw, desc: 'Sync with other platforms' },

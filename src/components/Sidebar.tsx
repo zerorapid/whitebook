@@ -19,7 +19,6 @@ export default function Sidebar() {
   const navigation = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Directory', href: '/contacts', icon: Users },
-    { name: 'Map View', href: '/map', icon: Map },
     { name: 'Groups & Tags', href: '/groups', icon: Layers },
   ];
 
