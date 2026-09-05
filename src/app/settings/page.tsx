@@ -113,7 +113,41 @@ export default function SettingsPage() {
                           className="w-full h-11 pl-10 pr-4 rounded-xl border border-border/40 bg-muted/20 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 text-sm font-medium outline-none transition-all" 
                         />
                       </div>
+                    
+                    <div>
+                      <label className="block text-sm font-bold mb-1.5">Role / Job Title</label>
+                      <div className="relative">
+                        <input 
+                          type="text" 
+                          value={profile.role}
+                          onChange={e => setProfile({...profile, role: e.target.value})}
+                          className="w-full h-11 px-4 rounded-xl border border-border/40 bg-muted/20 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 text-sm font-medium outline-none transition-all" 
+                        />
+                      </div>
                     </div>
+                    <div>
+                      <label className="block text-sm font-bold mb-1.5">Company</label>
+                      <div className="relative">
+                        <input 
+                          type="text" 
+                          value={profile.company}
+                          onChange={e => setProfile({...profile, company: e.target.value})}
+                          className="w-full h-11 px-4 rounded-xl border border-border/40 bg-muted/20 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 text-sm font-medium outline-none transition-all" 
+                        />
+                      </div>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-bold mb-1.5">Phone Number</label>
+                      <div className="relative">
+                        <input 
+                          type="tel" 
+                          value={profile.phone}
+                          onChange={e => setProfile({...profile, phone: e.target.value})}
+                          className="w-full h-11 px-4 rounded-xl border border-border/40 bg-muted/20 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/10 text-sm font-medium outline-none transition-all" 
+                        />
+                      </div>
+                    </div>
+</div>
                   </div>
                   <div className="pt-4 border-t border-border/40 flex justify-end">
                     <button 
@@ -125,6 +159,29 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
+
+              <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-center gap-8 mt-6">
+                <div className="flex-1 text-center sm:text-left space-y-3">
+                  <h2 className="text-2xl font-extrabold tracking-tight text-primary">Your Virtual Visiting Card</h2>
+                  <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+                    Scan this QR code with any smartphone camera to instantly save your profile directly to their contacts. No app required for them.
+                  </p>
+                  <div className="pt-2">
+                    <button className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-bold rounded-xl hover:opacity-90 transition-opacity shadow-sm">
+                      Share Profile Link
+                    </button>
+                  </div>
+                </div>
+                <div className="shrink-0 p-3 bg-white rounded-2xl shadow-md border">
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`BEGIN:VCARD\nVERSION:3.0\nFN:${profile.name}\nORG:${profile.company}\nTITLE:${profile.role}\nTEL:${profile.phone}\nEMAIL:${profile.email}\nEND:VCARD`)}`} 
+                    alt="Virtual Visiting Card QR Code"
+                    className="w-40 h-40"
+                  />
+                  <div className="text-[10px] font-black text-center mt-2 uppercase tracking-widest text-muted-foreground">Whitebook</div>
+                </div>
+              </div>
+
             </div>
           )}
 
