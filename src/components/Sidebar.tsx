@@ -4,14 +4,16 @@ import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { 
   Users, Layers, Settings, LifeBuoy, LayoutDashboard,
-  Scan, Sparkles, Map, RefreshCw
+  Scan, Sparkles, Map, RefreshCw, X, LogOut
 } from 'lucide-react';
 
 export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
+  
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    if (onClose) onClose();
     router.push('/login');
   };
 
@@ -40,10 +42,22 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose
         const isActive = pathname === item.href;
         return (
           <li key={item.name}>
-            <Link href={item.href} onClick={onClose} className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${isActive ? 'bg-white/10 text-white' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>
-              <Icon className="w-4 h-4" />
-              {item.name}
-              {item.name === 'AI Assistant' && <span className="ml-auto bg-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">2</span>}
+            <Link 
+              href={item.href} 
+              onClick={onClose} 
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                isActive 
+                  ? 'bg-white/15 text-white font-semibold shadow-sm' 
+                  : 'text-white/70 hover:bg-white/5 hover:text-white'
+              }`}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span>{item.name}</span>
+              {item.name === 'AI Assistant' && (
+                <span className="ml-auto bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                  AI
+                </span>
+              )}
             </Link>
           </li>
         );
@@ -52,8 +66,13 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose
   );
 
   return (
-    <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#18181b] text-white flex flex-col transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static`}>
-      <div className="h-16 flex items-center justify-between px-6 border-b border-white/10">
+    <aside 
+      className={`fixed inset-y-0 left-0 z-50 w-[82vw] max-w-[280px] md:w-64 bg-[#18181b] text-white flex flex-col transition-transform duration-300 ease-out shadow-2xl md:shadow-none md:translate-x-0 md:static ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      } pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]`}
+    >
+      {/* Header */}
+      <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 shrink-0">
         <div className="flex items-center gap-3">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 618.8 200.3" className="h-5 w-auto fill-current text-white">
             <path d="M38.9,93.6L10.6,16.2h28.1l13.2,44.1,3,11.5h1.3l1.7-7.6,13.6-47.9h30.3l14.4,47.9,2.4,7.6h1.3l3-11.5,12-44.1h27.7l-1.3,7.9-27.2,69.5h-30.3l-14-42.6-2.6-11.1h-1.3l-2.5,11.1-13.9,42.6h-30.7Z"/>
@@ -66,31 +85,46 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose
             <path d="M471.7,115.4c-5.4-4.7-14-7-25.7-7H163.5c-12,0-20.7,2.3-25.9,7-5.5,4.6-8.1,12-8.1,22v27.8c0,10.1,2.6,17.6,8.1,22.2,5.4,4.6,14.1,6.9,25.9,6.9h282.4c11.7,0,20.1-2.3,25.7-6.9,5.5-4.6,8.1-12.1,8.1-22.2v-27.8c0-10-2.6-17.4-8.1-22ZM289.9,160.7c0,3.3-2.7,5.9-6,5.9h-117.6c-3.3,0-5.9-2.6-5.9-5.9v-18.8c0-3.3,2.6-5.9,5.9-5.9h117.6c3.3,0,6,2.6,6,5.9v18.8ZM448.9,160.7c0,3.3-2.6,5.9-5.9,5.9h-118.3c-3.3,0-5.9-2.6-5.9-5.9v-18.8c0-3.3,2.6-5.9,5.9-5.9h118.3c3.3,0,5.9,2.6,5.9,5.9v18.8Z"/>
           </svg>
         </div>
-        {onClose && <button className="md:hidden text-white/50" onClick={onClose}>&times;</button>}
+        {onClose && (
+          <button 
+            type="button"
+            className="md:hidden w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-colors"
+            onClick={onClose}
+            aria-label="Close sidebar"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto py-6">
-        <div className="px-3 mb-8">
-          <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-white/50">Core</div>
+      {/* Nav groups */}
+      <div className="flex-1 overflow-y-auto py-5 px-3 space-y-6">
+        <div>
+          <div className="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-white/40">Core</div>
           {renderLinks(navigation)}
         </div>
         
-        <div className="px-3 mb-8">
-          <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-white/50">Smart Tools</div>
+        <div>
+          <div className="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-white/40">Smart Tools</div>
           {renderLinks(tools)}
         </div>
 
-        <div className="px-3 mb-8">
-          <div className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-white/50">System</div>
+        <div>
+          <div className="px-3 mb-2 text-[11px] font-bold uppercase tracking-wider text-white/40">System</div>
           {renderLinks(system)}
         </div>
       </div>
       
-      <div className="px-6 pb-6">
-        <button onClick={handleLogout} className="w-full py-2 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-lg text-sm font-medium transition-colors">
+      {/* Footer */}
+      <div className="p-4 border-t border-white/10 shrink-0">
+        <button 
+          onClick={handleLogout} 
+          className="w-full py-2.5 px-3 bg-white/5 hover:bg-rose-500/20 text-white/70 hover:text-rose-400 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+        >
+          <LogOut className="w-4 h-4" />
           Log Out
         </button>
       </div>
-    </div>
+    </aside>
   );
 }

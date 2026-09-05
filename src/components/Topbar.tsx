@@ -1,22 +1,24 @@
 "use client";
 import { Bell, Search, Menu } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
 export default function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
-  const pathname = usePathname();
-  
   return (
-    <header className="h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 flex items-center justify-between px-6">
-      <div className="flex-1 flex items-center gap-3 md:hidden">
-        <button onClick={onMenuClick} className="p-2 -ml-2 rounded-lg hover:bg-muted text-foreground">
+    <header className="h-14 md:h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 pt-[env(safe-area-inset-top,0px)]">
+      {/* Mobile brand + drawer trigger */}
+      <div className="flex items-center gap-2.5 md:hidden">
+        <button 
+          onClick={onMenuClick} 
+          className="p-2 -ml-1.5 rounded-xl hover:bg-muted text-foreground transition-colors"
+          aria-label="Open menu"
+        >
           <Menu className="w-5 h-5" />
         </button>
-        <span className="font-bold tracking-tight">White Book</span>
+        <span className="font-extrabold tracking-tight text-base">WHITE BOOK</span>
       </div>
       
+      {/* Desktop Search */}
       <div className="hidden md:flex flex-1 items-center gap-4">
-        {/* Sleek Global Search */}
         <div className="relative group max-w-md w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <input 
@@ -30,10 +32,12 @@ export default function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      {/* Right Action icons */}
+      <div className="flex items-center gap-2 md:gap-4">
         <Link 
           href="/notifications" 
           className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+          aria-label="Notifications"
         >
           <Bell className="w-5 h-5" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-background"></span>

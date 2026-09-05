@@ -23,6 +23,11 @@ export const metadata: import('next').Metadata = {
 
 export const viewport = {
   themeColor: "#18181b",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
