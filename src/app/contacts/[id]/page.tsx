@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { useStore } from '@/lib/store';
+import { ContactModal } from '@/components/ContactModal';
 
 // Custom SVG Icons for Social Media
 const Linkedin = ({ className }: { className?: string }) => (
@@ -37,6 +38,7 @@ export default function ContactDetail({ params }: { params: { id: string } }) {
   const contact = contacts.find((c: any) => String(c.id) === String(params.id));
   
   const [activeTab, setActiveTab] = useState('notes');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [newNote, setNewNote] = useState('');
 
   const handleSaveNote = () => {
@@ -80,11 +82,11 @@ export default function ContactDetail({ params }: { params: { id: string } }) {
               <div className="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 border-2 border-background rounded-full"></div>
             </div>
             <div className="flex items-center gap-3">
-              <button className="px-4 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-full shadow-sm hover:bg-primary/90 transition-all">
-                Send Message
-              </button>
-              <button className="px-4 py-2 bg-secondary text-secondary-foreground text-sm font-semibold rounded-full shadow-sm hover:bg-secondary/80 transition-all">
-                Schedule Meeting
+              <button 
+                onClick={() => setIsEditModalOpen(true)}
+                className="px-5 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-full shadow-sm hover:bg-primary/90 transition-all flex items-center gap-2"
+              >
+                <Edit2 className="w-4 h-4" /> Edit Profile
               </button>
             </div>
           </div>
@@ -306,6 +308,10 @@ export default function ContactDetail({ params }: { params: { id: string } }) {
           </div>
         </div>
       </div>
+      
+      {isEditModalOpen && (
+        <ContactModal contact={contact} onClose={() => setIsEditModalOpen(false)} />
+      )}
     </div>
   );
 }
