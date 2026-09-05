@@ -12,7 +12,7 @@ export default function MobileBottomNav() {
   const navItems = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Directory', href: '/contacts', icon: Users },
-    { name: 'Scan', href: '/scanner', icon: ScanLine, isAction: true },
+    { name: 'Assistant', href: '/assistant', icon: Sparkles, isAction: true },
     { name: 'Features', href: '/menu', icon: LayoutGrid },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];

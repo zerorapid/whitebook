@@ -24,7 +24,6 @@ export default function Sidebar() {
 
   const tools = [
     { name: 'AI Assistant', href: '/assistant', icon: Sparkles },
-    { name: 'Card Scanner', href: '/scanner', icon: Scan },
     { name: 'Sync & Integrations', href: '/integrations', icon: RefreshCw },
   ];
 
