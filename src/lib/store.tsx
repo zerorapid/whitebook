@@ -14,19 +14,19 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     notes: "Met at the annual conference. " + (c.notes || "")
   }));
 
-  const [contacts, setContacts] = useState(enhancedContacts);
-  const [groups, setGroups] = useState(initialGroups);
+  const [contacts, setContacts] = useState<any[]>(enhancedContacts);
+  const [groups, setGroups] = useState<any[]>(initialGroups);
 
   useEffect(() => {
     async function loadData() {
       try {
         const { data: contactsData, error: contactsError } = await supabase.from('contacts').select('*');
-        if (contactsData && contactsData.length > 0) {
+        if (!contactsError && contactsData) {
           setContacts(contactsData);
         }
         
         const { data: groupsData, error: groupsError } = await supabase.from('groups').select('*');
-        if (groupsData && groupsData.length > 0) {
+        if (!groupsError && groupsData) {
           setGroups(groupsData);
         }
       } catch (err) {
@@ -51,15 +51,42 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       contacts,
       addContact: async (c: any) => {
         setContacts([...contacts, c]); // Optimistic UI
-        const payload = { ...c };
+        
+        // Only include fields that exist in the Supabase schema
+        const payload: any = {
+          name: c.name,
+          company: c.company,
+          role: c.role,
+          email: c.email,
+          phone: c.phone,
+          location: c.location,
+          avatar: c.avatar,
+          last_contact: c.last_contact,
+          notes: c.notes,
+          tags: c.tags || []
+        };
+        
+        // Remove undefined fields
+        Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) payload.user_id = session.user.id;
-        if (typeof payload.id === 'number') delete payload.id;
+        
         await supabase.from('contacts').insert([payload]);
       },
       updateContact: async (id: any, data: any) => {
         setContacts(contacts.map((c: any) => c.id === id ? { ...c, ...data } : c));
-        await supabase.from('contacts').update(data).eq('id', id);
+        
+        const payload = { ...data };
+        delete payload.id;
+        delete payload.user_id;
+        delete payload.created_at;
+        delete payload.birthday;
+        delete payload.followUp;
+        delete payload.locationCoords;
+        delete payload.added;
+        
+        await supabase.from('contacts').update(payload).eq('id', id);
       },
       deleteContact: async (id: any) => {
         setContacts(contacts.filter((c: any) => c.id !== id));
@@ -70,11 +97,18 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       addGroup: async (g: any, initialContactIds: number[] = []) => {
         setGroups([...groups, g]);
         
-        // Save to Supabase
-        const payload = { ...g };
+        // Only include fields that exist in Supabase schema
+        const payload: any = {
+          name: g.name,
+          description: g.description,
+          tags: g.tags || [],
+          members: g.members || []
+        };
+        
+        Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) payload.user_id = session.user.id;
-        if (typeof payload.id === 'number') delete payload.id;
         
         await supabase.from('groups').insert([payload]);
 
