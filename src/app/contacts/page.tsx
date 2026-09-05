@@ -112,8 +112,8 @@ export default function ContactsDirectory() {
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Directory</h1>
           <p className="text-muted-foreground text-sm font-medium">Manage and search your professional network.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href="/contacts/new" className="inline-flex items-center justify-center rounded-xl text-sm font-bold transition-all bg-primary text-primary-foreground hover:opacity-90 active:scale-95 h-11 px-5 shadow-sm">
+        <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
+          <Link href="/contacts/new" className="inline-flex flex-1 md:flex-none items-center justify-center rounded-xl text-sm font-bold transition-all bg-primary text-primary-foreground hover:opacity-90 active:scale-95 h-11 px-5 shadow-sm">
             <Plus className="w-4 h-4 mr-2" />
             New Contact
           </Link>
@@ -128,12 +128,12 @@ export default function ContactsDirectory() {
           </div>
           <input 
             type="text" 
-            placeholder="Try 'Works at Google' or 'Lives in New York'..." 
+            placeholder="Search contacts..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="block w-full pl-11 pr-32 py-3.5 bg-card border border-border/60 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-sm outline-none"
+            className="block w-full pl-11 pr-4 sm:pr-32 py-3.5 bg-card border border-border/60 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all shadow-sm outline-none"
           />
-          <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none">
+          <div className="absolute inset-y-0 right-2 hidden sm:flex items-center pointer-events-none">
             <div className="flex items-center gap-1.5 bg-blue-500/10 text-blue-600 px-2.5 py-1 rounded-lg text-xs font-bold border border-blue-500/20">
               <Sparkles className="w-3 h-3" /> Smart Search
             </div>
@@ -153,7 +153,7 @@ export default function ContactsDirectory() {
       </div>
 
       {/* SaaS Style Data Table */}
-      <div className="bg-card border border-border/60 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-card border border-border/60 rounded-2xl shadow-sm overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
             <thead className="bg-muted/30 border-b border-border/60">
@@ -255,6 +255,65 @@ export default function ContactsDirectory() {
           </table>
         </div>
       </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden flex flex-col gap-3">
+        {filteredContacts.map((contact: any) => (
+          <div 
+            key={contact.id}
+            onClick={() => setSelectedContact(contact)}
+            className="bg-card border border-border/60 rounded-2xl p-4 flex flex-col gap-4 shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
+          >
+            <div className="flex justify-between items-start">
+              <div className="flex gap-3 items-center">
+                <img 
+                  src={contact.avatar || `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`}
+                  alt={contact.name} 
+                  className="w-12 h-12 rounded-full bg-secondary border border-border/50 object-cover shrink-0"
+                />
+                <div>
+                  <h3 className="font-bold text-base text-foreground leading-tight">{contact.name}</h3>
+                  <div className="text-sm font-semibold text-muted-foreground mt-0.5">{contact.role}</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col gap-2 text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Building2 className="w-4 h-4" />
+                <span className="font-medium text-foreground">{contact.company}</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="w-4 h-4" />
+                <span className="font-medium text-foreground">{formatLocationShortcut(contact.location)}</span>
+              </div>
+            </div>
+            
+            {contact.tags && contact.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {contact.tags.map((tag: string, idx: number) => {
+                  const isVIP = tag.toUpperCase() === 'VIP';
+                  return (
+                    <span 
+                      key={idx} 
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        isVIP 
+                          ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' 
+                          : 'bg-primary/5 text-primary border-primary/10'
+                      }`}
+                    >
+                      {isVIP && <Star className="w-2.5 h-2.5 fill-current" />}
+                      {!isVIP && <Tag className="w-2.5 h-2.5" />}
+                      {tag}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
       {selectedContact && (
         <ContactModal 
           contact={selectedContact} 
