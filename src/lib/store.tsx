@@ -54,6 +54,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Supabase load error:', err);
       } finally {
         setIsStoreReady(true);
+        processQueue().catch(e => console.error('Queue sync failed:', e));
       }
     }
     loadData();
@@ -98,47 +99,46 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     <StoreContext.Provider value={{
       contacts,
       addContact: async (c: any) => {
-        setContacts([...contacts, c]); // Optimistic UI
+        // Optimistic UI with temporary ID if missing
+        const newContact = { ...c, id: c.id || Date.now() };
+        setContacts([...contacts, newContact]); 
         
-        // Only include fields that exist in the Supabase schema
         const payload: any = {
-          name: c.name,
-          company: c.company,
-          role: c.role,
-          email: c.email,
-          phone: c.phone,
-          location: c.location,
-          avatar: c.avatar,
-          last_contact: c.last_contact,
-          notes: c.notes,
-          tags: c.tags || [],
-          linkedin: c.linkedin,
-          twitter: c.twitter,
-          instagram: c.instagram,
+          name: c.name, company: c.company, role: c.role, email: c.email,
+          phone: c.phone, location: c.location, avatar: c.avatar,
+          last_contact: c.last_contact, notes: c.notes, tags: c.tags || [],
+          linkedin: c.linkedin, twitter: c.twitter, instagram: c.instagram,
           business_card_image: c.business_card_image
         };
-        
-        // Remove undefined fields
         Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
 
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) payload.user_id = session.user.id;
-        
-        await supabase.from('contacts').insert([payload]);
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) payload.user_id = session.user.id;
+          
+          const { error } = await supabase.from('contacts').insert([payload]);
+          if (error) throw error;
+        } catch (err) {
+          console.log("Offline or failed insert. Queueing for sync.");
+          const queue = JSON.parse(localStorage.getItem('wb_offline_queue') || '[]');
+          queue.push({ action: 'INSERT_CONTACT', payload });
+          localStorage.setItem('wb_offline_queue', JSON.stringify(queue));
+        }
       },
       updateContact: async (id: any, data: any) => {
         setContacts(contacts.map((c: any) => c.id === id ? { ...c, ...data } : c));
         
         const payload = { ...data };
-        delete payload.id;
-        delete payload.user_id;
-        delete payload.created_at;
-        delete payload.birthday;
-        delete payload.followUp;
-        delete payload.locationCoords;
-        delete payload.added;
+        ['id', 'user_id', 'created_at', 'birthday', 'followUp', 'locationCoords', 'added'].forEach(k => delete payload[k]);
         
-        await supabase.from('contacts').update(payload).eq('id', id);
+        try {
+          const { error } = await supabase.from('contacts').update(payload).eq('id', id);
+          if (error) throw error;
+        } catch (err) {
+          const queue = JSON.parse(localStorage.getItem('wb_offline_queue') || '[]');
+          queue.push({ action: 'UPDATE_CONTACT', id, payload });
+          localStorage.setItem('wb_offline_queue', JSON.stringify(queue));
+        }
       },
       deleteContact: async (id: any) => {
         setContacts(contacts.filter((c: any) => c.id !== id));
