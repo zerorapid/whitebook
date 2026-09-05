@@ -1,11 +1,11 @@
 "use client";
-import { Settings, Shield, Bell, Moon, Globe, Check } from 'lucide-react';
+import { Settings, Shield, Bell, Globe, Check, User } from 'lucide-react';
 import { useState } from 'react';
 
 export default function SettingsPage() {
   const [toggles, setToggles] = useState<Record<string, boolean>>({
-    'Dark Mode': true,
-    'Compact View': false,
+    'Public Profile': true,
+    'Share Contact Info': false,
     'Push Notifications': true,
     'Email Summaries': false,
     'Two-Factor Auth': false,
@@ -16,11 +16,11 @@ export default function SettingsPage() {
 
   const sections = [
     {
-      title: "Appearance",
-      icon: Moon,
+      title: "Profile Settings",
+      icon: User,
       items: [
-        { name: "Dark Mode", desc: "Use the dark theme across the app." },
-        { name: "Compact View", desc: "Decrease spacing to see more contacts at once." }
+        { name: "Public Profile", desc: "Allow others to discover your professional card." },
+        { name: "Share Contact Info", desc: "Include email and phone when sharing your profile." }
       ]
     },
     {
