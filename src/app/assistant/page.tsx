@@ -1,36 +1,82 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { Bot, Send, User, Sparkles } from 'lucide-react';
+import { Bot, Send, User, Sparkles, Camera, X } from 'lucide-react';
 import { useStore } from '@/lib/store';
+
+type Message = { role: 'ai' | 'user'; text: string; image?: string };
 
 export default function AssistantPage() {
   const { contacts } = useStore();
-  const [messages, setMessages] = useState([{ 
+  const [messages, setMessages] = useState<Message[]>([{ 
     role: 'ai', 
-    text: "Hello! I am your White Book AI. I can analyze your network, find duplicates, or help you recall who works where. How can I help?" 
+    text: "Hello! I am your White Book AI. I can analyze your network, find duplicates, or help you recall who works where. You can also tap the camera icon to scan a business card and ask me to save it!" 
   }]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, selectedImage]);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setSelectedImage(event.target?.result as string);
+      // Optional: focus input after selecting image
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() && !selectedImage) || isLoading) return;
 
     const userText = input.trim();
+    const imageToSend = selectedImage;
+    
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userText }]);
+    setSelectedImage(null);
+    setMessages(prev => [...prev, { role: 'user', text: userText, image: imageToSend || undefined }]);
     setIsLoading(true);
 
     try {
+      let finalPrompt = userText;
+
+      // If an image was attached, we first extract the text using our scanner endpoint
+      if (imageToSend) {
+        setMessages(prev => [...prev, { role: 'ai', text: "*Scanning business card...*" }]);
+        const scanRes = await fetch('/api/scanner', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: imageToSend })
+        });
+        
+        const scanData = await scanRes.json();
+        
+        if (scanRes.ok && scanData) {
+          // Remove the "Scanning..." message
+          setMessages(prev => prev.slice(0, -1));
+          
+          finalPrompt = `I just scanned a business card. Here is the extracted data in JSON format: ${JSON.stringify(scanData)}. 
+The user also added this message: "${userText}". 
+Please acknowledge the card details, summarize who they are, and ask if I should add them to the CRM.`;
+        } else {
+          setMessages(prev => prev.slice(0, -1));
+          throw new Error("Failed to read the business card.");
+        }
+      }
+
+      // Now send to the normal AI assistant
       const res = await fetch('/api/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: userText, contacts })
+        body: JSON.stringify({ prompt: finalPrompt, contacts })
       });
       const data = await res.json();
       
@@ -39,8 +85,8 @@ export default function AssistantPage() {
       } else {
         setMessages(prev => [...prev, { role: 'ai', text: `Error: ${data.error}` }]);
       }
-    } catch (err) {
-      setMessages(prev => [...prev, { role: 'ai', text: "Failed to connect to the AI." }]);
+    } catch (err: any) {
+      setMessages(prev => [...prev, { role: 'ai', text: err.message || "Failed to connect to the AI." }]);
     } finally {
       setIsLoading(false);
     }
@@ -65,10 +111,19 @@ export default function AssistantPage() {
             <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-secondary' : 'bg-primary text-primary-foreground'}`}>
               {msg.role === 'user' ? <User className="w-5 h-5 text-muted-foreground" /> : <Bot className="w-5 h-5" />}
             </div>
-            <div className={`max-w-[80%] rounded-2xl p-4 text-sm ${msg.role === 'user' ? 'bg-secondary text-foreground rounded-tr-none' : 'bg-primary/10 border border-primary/20 text-foreground rounded-tl-none'}`}>
-              {msg.text.split('\n').map((line, j) => (
-                <p key={j} className={j > 0 ? 'mt-2' : ''}>{line}</p>
-              ))}
+            <div className={`max-w-[80%] flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+              {msg.image && (
+                <div className="p-1.5 bg-secondary rounded-2xl rounded-tr-none border shadow-sm">
+                  <img src={msg.image} alt="Scanned Card" className="max-w-[200px] md:max-w-[250px] rounded-xl object-cover" />
+                </div>
+              )}
+              {msg.text && (
+                <div className={`rounded-2xl p-4 text-sm shadow-sm ${msg.role === 'user' ? (msg.image ? 'bg-secondary text-foreground rounded-tr-none mt-1' : 'bg-secondary text-foreground rounded-tr-none') : 'bg-primary/10 border border-primary/20 text-foreground rounded-tl-none'}`}>
+                  {msg.text.split('\n').map((line, j) => (
+                    <p key={j} className={j > 0 ? 'mt-2' : ''}>{line}</p>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -87,19 +142,49 @@ export default function AssistantPage() {
         <div ref={endRef} />
       </div>
 
-      <div className="p-4 bg-secondary/30 border-t">
-        <form onSubmit={handleSend} className="relative flex items-center max-w-3xl mx-auto">
+      <div className="p-4 bg-secondary/30 border-t flex flex-col items-center">
+        {selectedImage && (
+          <div className="w-full max-w-3xl mb-3 relative animate-in slide-in-from-bottom-2">
+            <div className="inline-block relative">
+              <img src={selectedImage} alt="Preview" className="h-20 rounded-lg border shadow-sm object-cover" />
+              <button 
+                onClick={() => setSelectedImage(null)}
+                className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 shadow-md hover:scale-110 transition-transform"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSend} className="relative flex items-center w-full max-w-3xl">
+          <input 
+            type="file" 
+            accept="image/*" 
+            capture="environment" 
+            ref={fileInputRef} 
+            className="hidden" 
+            onChange={handleImageUpload}
+          />
+          <button 
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute left-2 w-10 h-10 text-muted-foreground hover:bg-muted hover:text-foreground rounded-full flex items-center justify-center transition-all z-10"
+            title="Scan Business Card"
+          >
+            <Camera className="w-5 h-5" />
+          </button>
           <input
             type="text"
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder="Ask about your contacts or request deduplication..."
-            className="w-full bg-background border rounded-full py-4 pl-6 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+            placeholder="Ask about your contacts or scan a business card..."
+            className="w-full bg-background border rounded-full py-4 pl-14 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
           />
           <button 
             type="submit" 
-            disabled={isLoading || !input.trim()}
-            className="absolute right-2 w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center hover:bg-primary/90 disabled:opacity-50 transition-all"
+            disabled={isLoading || (!input.trim() && !selectedImage)}
+            className="absolute right-2 w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center hover:bg-primary/90 disabled:opacity-50 transition-all z-10"
           >
             <Send className="w-4 h-4" />
           </button>
