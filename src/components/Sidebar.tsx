@@ -65,7 +65,7 @@ export default function Sidebar() {
 
   return (
     <aside 
-      className="hidden md:flex flex-col w-64 bg-[#18181b] text-white shrink-0 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
+      className="hidden md:flex fixed inset-y-0 left-0 z-50 w-64 bg-[#18181b] text-white flex-col static pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
     >
       {/* Header */}
       <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 shrink-0">

@@ -1,4 +1,5 @@
 "use client";
+
 import { usePathname } from 'next/navigation';
 import AuthGuard from './AuthGuard';
 import Sidebar from './Sidebar';
@@ -14,7 +15,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
         children
       ) : (
         <div className="flex h-screen overflow-hidden bg-background text-foreground">
-          {/* Desktop Sidebar */}
+          {/* Desktop Sidebar (hidden on mobile) */}
           <Sidebar />
 
           {/* Main viewport area */}
