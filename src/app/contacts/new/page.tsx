@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Upload, RefreshCw, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -15,12 +15,23 @@ function NewContactForm() {
   const searchParams = useSearchParams();
   const { addContact } = useStore();
   
-  const [name, setName] = useState('');
-  const [company, setCompany] = useState('');
-  const [role, setRole] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [location, setLocation] = useState('');
+  const [name, setName] = useState(searchParams?.get('name') || '');
+  const [company, setCompany] = useState(searchParams?.get('company') || '');
+  const [role, setRole] = useState(searchParams?.get('role') || '');
+  const [email, setEmail] = useState(searchParams?.get('email') || '');
+  const [phone, setPhone] = useState(searchParams?.get('phone') || '');
+  const [location, setLocation] = useState(searchParams?.get('location') || '');
+
+  useEffect(() => {
+    if (searchParams) {
+      if (searchParams.get('name')) setName(searchParams.get('name') || '');
+      if (searchParams.get('company')) setCompany(searchParams.get('company') || '');
+      if (searchParams.get('role')) setRole(searchParams.get('role') || '');
+      if (searchParams.get('email')) setEmail(searchParams.get('email') || '');
+      if (searchParams.get('phone')) setPhone(searchParams.get('phone') || '');
+      if (searchParams.get('location')) setLocation(searchParams.get('location') || '');
+    }
+  }, [searchParams]);
   
   // Avatar states
   const fileInputRef = useRef<HTMLInputElement>(null);
