@@ -27,25 +27,8 @@ function CardContent() {
   const linkedin = searchParams.get('l') || '';
 
   const handleSaveContact = () => {
-    // Generate vCard
-    const vCard = `BEGIN:VCARD
-VERSION:3.0
-FN:${name}
-ORG:${company}
-TITLE:${role}
-TEL:${phone}
-EMAIL:${email}
-URL:${website}
-END:VCARD`;
-
-    const blob = new Blob([vCard], { type: 'text/vcard' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${name.replace(/\s+/g, '_')}.vcf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const params = new URLSearchParams(window.location.search);
+    window.location.href = `/api/vcard?${params.toString()}`;
   };
 
   return (
