@@ -13,7 +13,7 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   // Form states
-  const [profile, setProfile] = useState({ name: 'Executive User', email: 'executive@example.com' });
+  const [profile, setProfile] = useState({ name: 'Srikanth', role: 'Event Organizer', company: 'Whitebook Events', email: 'srikanth@whitebook.app', phone: '+919876543210', linkedin: 'https://linkedin.com/in/srikanth' });
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   
   // Toggles for notifications
@@ -183,6 +183,8 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+
+          
 
           {/* SECURITY TAB */}
           {activeTab === 'security' && (

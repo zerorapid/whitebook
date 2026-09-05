@@ -34,13 +34,15 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-[#18181b] flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-black border border-white/10 rounded-3xl p-8 shadow-2xl">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-white text-black rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <Lock className="w-8 h-8" />
+        
+        <div className="text-center mb-10">
+          <div className="w-20 h-20 bg-white text-black rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-white/5">
+            <div className="font-black text-4xl tracking-tighter">W</div>
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">White Book</h1>
-          <p className="text-white/50 mt-2 text-sm">Secure Private Network Directory</p>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2">Whitebook</h1>
+          <p className="text-white/60 text-sm font-medium">Your Personal AI Brain for Networking</p>
         </div>
+
 
         <form onSubmit={handleAuth} className="space-y-4">
           {error && <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm text-center font-medium">{error}</div>}

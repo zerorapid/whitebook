@@ -7,8 +7,8 @@ import { StoreProvider } from "@/lib/store";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: import('next').Metadata = {
-  title: "White Book",
-  description: "White Book - Private Directory",
+  title: "Whitebook",
+  description: "Whitebook - Private Directory",
   manifest: "/manifest.json",
   icons: {
     icon: "/icons/icon-192x192.png",
@@ -17,7 +17,7 @@ export const metadata: import('next').Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "White Book",
+    title: "Whitebook",
   },
 };
 
