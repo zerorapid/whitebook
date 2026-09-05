@@ -13,6 +13,28 @@ export default function ContactsDirectory() {
   const [selectedContact, setSelectedContact] = useState<any | null>(null);
   const { contacts } = useStore();
 
+  const formatLocationShortcut = (loc: string) => {
+    if (!loc) return '-';
+    let cleanLoc = loc.replace(/,\s*(USA|United States|India|UK|United Kingdom)$/i, '');
+    cleanLoc = cleanLoc.replace(/\b([A-Z]{2})\s+\d{5}(?:-\d{4})?\b/gi, '$1');
+    const parts = cleanLoc.split(',').map(s => s.trim());
+    if (parts.length >= 3) {
+      return parts[parts.length - 2] + ', ' + parts[parts.length - 1];
+    }
+    const stateMap: Record<string, string> = {
+      "california": "CA", "new york": "NY", "texas": "TX", "florida": "FL",
+      "washington": "WA", "illinois": "IL", "pennsylvania": "PA", "georgia": "GA",
+      "tamil nadu": "TN", "delhi": "DL", "maharashtra": "MH", "karnataka": "KA"
+    };
+    if (parts.length === 2) {
+      const state = parts[1].toLowerCase();
+      if (stateMap[state]) {
+        return parts[0] + ', ' + stateMap[state];
+      }
+    }
+    return cleanLoc;
+  };
+
   const filteredContacts = useMemo(() => {
     if (!searchQuery || searchQuery.trim() === '') return contacts;
     const query = searchQuery.toLowerCase().trim();
@@ -141,7 +163,7 @@ export default function ContactsDirectory() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
                       <MapPin className="w-4 h-4 text-muted-foreground" />
-                      {contact.location || '-'}
+                      {formatLocationShortcut(contact.location)}
                     </div>
                   </td>
                   <td className="px-6 py-4">
