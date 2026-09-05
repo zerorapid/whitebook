@@ -30,7 +30,7 @@ export default function Dashboard() {
   const urgentCount = followUps.length + birthdays.length;
   
   return (
-    <div className="space-y-8 pb-12 animate-in fade-in duration-700">
+    <div className="space-y-8 pb-12 animate-in fade-in duration-700 max-w-7xl mx-auto w-full">
       
       {/* Header & Quick Actions */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-2">

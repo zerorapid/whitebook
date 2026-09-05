@@ -11,7 +11,7 @@ export default function ClientShell({ children }: { children: React.ReactNode })
 
   return (
     <AuthGuard>
-      {pathname === "/login" ? (
+      {(pathname === "/login" || pathname.startsWith("/card")) ? (
         children
       ) : (
         <div className="flex h-screen overflow-hidden bg-background text-foreground">

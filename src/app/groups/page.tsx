@@ -81,7 +81,7 @@ export default function GroupsPage() {
   };
 
   return (
-    <div className="space-y-8 pb-12 animate-in fade-in duration-700 h-[calc(100vh-6rem)] flex flex-col">
+    <div className="space-y-8 pb-12 animate-in fade-in duration-700 h-[calc(100vh-6rem)] flex flex-col max-w-7xl mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border/40 shrink-0">
         <div className="space-y-1.5">
           <h1 className="text-4xl font-bold tracking-tight text-foreground flex items-center gap-3">

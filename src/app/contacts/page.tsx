@@ -51,7 +51,7 @@ export default function ContactsDirectory() {
   }, [contacts, searchQuery]);
 
   return (
-    <div className="space-y-8 pb-12 animate-in fade-in duration-500">
+    <div className="space-y-8 pb-12 animate-in fade-in duration-500 max-w-7xl mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border/40">
         <div className="space-y-1.5">
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Directory</h1>
@@ -67,7 +67,7 @@ export default function ContactsDirectory() {
 
       
       <div className="flex flex-col sm:flex-row justify-between gap-3">
-        <div className="relative w-full sm:max-w-md md:max-w-2xl group">
+        <div className="relative flex-1 group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
             <Search className="h-5 w-5" />
           </div>

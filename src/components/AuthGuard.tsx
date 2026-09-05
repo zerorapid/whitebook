@@ -15,7 +15,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       setLoading(false);
       
-      if (!session && pathname !== '/login') {
+      if (!session && (pathname !== '/login' && !pathname.startsWith('/card'))) {
         router.push('/login');
       } else if (session && pathname === '/login') {
         router.push('/');
@@ -26,7 +26,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      if (!session && pathname !== '/login') {
+      if (!session && (pathname !== '/login' && !pathname.startsWith('/card'))) {
         router.push('/login');
       } else if (session && pathname === '/login') {
         router.push('/');
@@ -44,7 +44,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user && pathname !== '/login') return null;
+  if (!user && (pathname !== '/login' && !pathname.startsWith('/card'))) return null;
 
   return <>{children}</>;
 }
