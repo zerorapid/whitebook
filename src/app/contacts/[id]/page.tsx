@@ -310,7 +310,7 @@ export default function ContactDetail({ params }: { params: { id: string } }) {
       </div>
       
       {isEditModalOpen && (
-        <ContactModal contact={contact} onClose={() => setIsEditModalOpen(false)} />
+        <ContactModal contact={contact} onClose={() => setIsEditModalOpen(false)} defaultEditing={true} />
       )}
     </div>
   );

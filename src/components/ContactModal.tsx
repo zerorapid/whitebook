@@ -26,9 +26,9 @@ const Instagram = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export function ContactModal({ contact, onClose }: { contact: any, onClose: () => void }) {
+export function ContactModal({ contact, onClose, defaultEditing = false }: { contact: any, onClose: () => void, defaultEditing?: boolean }) {
   const { updateContact, deleteContact } = useStore();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(defaultEditing);
   const [formData, setFormData] = useState({ ...contact });
   const [isDeleting, setIsDeleting] = useState(false);
 
