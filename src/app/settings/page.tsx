@@ -6,9 +6,11 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { useStore } from '@/lib/store';
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { contacts, addContact } = useStore();
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,6 +21,110 @@ export default function SettingsPage() {
   // Toggles for notifications
   const [notifs, setNotifs] = useState({ push: true, email: false, digest: true });
   const [security, setSecurity] = useState({ twoFactor: false, biometric: true });
+
+  
+
+  const handleExport = () => {
+    if (!contacts || contacts.length === 0) return alert('No contacts to export.');
+    
+    const headers = ['Name', 'Role', 'Company', 'Phone', 'Email', 'Location', 'Tags', 'Notes'];
+    const rows = contacts.map(c => [
+      c.name || '',
+      c.role || '',
+      c.company || '',
+      c.phone || '',
+      c.email || '',
+      c.location || '',
+      (c.tags || []).join('; '),
+      c.notes || ''
+    ].map(v => `"${v.toString().replace(/"/g, '""')}"`).join(','));
+    
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `whitebook_contacts_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setIsLoading(true);
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        const lines = text.split('\n').filter(line => line.trim() !== '');
+        if (lines.length < 2) {
+          alert('File is empty or invalid.');
+          return;
+        }
+        
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
+        let importCount = 0;
+        
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i];
+          const parsedVals: string[] = [];
+          let inQuotes = false;
+          let currentVal = '';
+          for (let j = 0; j < line.length; j++) {
+            const char = line[j];
+            if (char === '"' && line[j+1] === '"') { currentVal += '"'; j++; }
+            else if (char === '"') { inQuotes = !inQuotes; }
+            else if (char === ',' && !inQuotes) { parsedVals.push(currentVal); currentVal = ''; }
+            else { currentVal += char; }
+          }
+          parsedVals.push(currentVal);
+
+          const contact: any = {};
+          headers.forEach((h, idx) => {
+            const val = parsedVals[idx]?.trim().replace(/^"|"$/g, '') || '';
+            if (h.includes('name')) contact.name = val;
+            else if (h.includes('phone') || h.includes('tel')) contact.phone = val;
+            else if (h.includes('email')) contact.email = val;
+            else if (h.includes('company') || h.includes('org')) contact.company = val;
+            else if (h.includes('role') || h.includes('title')) contact.role = val;
+            else if (h.includes('loc')) contact.location = val;
+            else if (h.includes('tag')) contact.tags = val.split(';').map((t: string) => t.trim()).filter(Boolean);
+            else if (h.includes('note')) contact.notes = val;
+          });
+
+          if (contact.name) {
+            contact.id = Date.now() + Math.random();
+            contact.avatar = `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`;
+            await addContact(contact);
+            importCount++;
+          }
+        }
+        alert(`Successfully imported ${importCount} contacts!`);
+      } catch (err) {
+        console.error(err);
+        alert('Failed to import contacts. Please check the CSV format.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const getCardUrl = () => {
+    if (typeof window === 'undefined') return '';
+    const params = new URLSearchParams({
+      n: profile.name,
+      r: profile.role,
+      c: profile.company,
+      p: profile.phone,
+      e: profile.email,
+      l: profile.linkedin
+    });
+    return `${window.location.origin}/card?${params.toString()}`;
+  };
 
   const handleSave = () => {
     setIsLoading(true);
@@ -174,7 +280,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="shrink-0 p-3 bg-white rounded-2xl shadow-md border">
                   <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`BEGIN:VCARD\nVERSION:3.0\nFN:${profile.name}\nORG:${profile.company}\nTITLE:${profile.role}\nTEL:${profile.phone}\nEMAIL:${profile.email}\nEND:VCARD`)}`} 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(getCardUrl())}`} 
                     alt="Virtual Visiting Card QR Code"
                     className="w-40 h-40"
                   />
@@ -203,9 +309,7 @@ export default function SettingsPage() {
                       <h3 className="font-bold text-base mb-1">Export Contacts</h3>
                       <p className="text-sm text-muted-foreground mb-6">Download your entire directory as a standard CSV file for backups or external use.</p>
                     </div>
-                    <button className="w-full flex items-center justify-center gap-2 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl text-sm font-bold transition-all group-hover:bg-primary group-hover:text-primary-foreground">
-                      <Download className="w-4 h-4" /> Export to CSV
-                    </button>
+                    <button onClick={handleExport} className="w-full flex items-center justify-center gap-2 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl text-sm font-bold transition-all group-hover:bg-primary group-hover:text-primary-foreground"><Download className="w-4 h-4" /> Export to CSV</button>
                   </div>
 
                   {/* Import Card */}
@@ -217,9 +321,10 @@ export default function SettingsPage() {
                       <h3 className="font-bold text-base mb-1">Import Contacts</h3>
                       <p className="text-sm text-muted-foreground mb-6">Bulk add contacts by uploading a CSV file. We will automatically map the columns.</p>
                     </div>
-                    <button className="w-full flex items-center justify-center gap-2 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl text-sm font-bold transition-all group-hover:bg-primary group-hover:text-primary-foreground">
-                      <Upload className="w-4 h-4" /> Import from CSV
-                    </button>
+                    <label className="w-full flex items-center justify-center gap-2 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl text-sm font-bold transition-all group-hover:bg-primary group-hover:text-primary-foreground cursor-pointer">
+    <Upload className="w-4 h-4" /> Import from CSV
+    <input type="file" accept=".csv" className="hidden" onChange={handleImport} disabled={isLoading} />
+  </label>
                   </div>
                 </div>
               </div>
