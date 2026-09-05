@@ -17,7 +17,7 @@ export default function MenuPage() {
   const moreFeatures = [
     { name: 'AI Assistant', href: '/assistant', icon: Sparkles, badge: 'AI', desc: 'Chat with your smart assistant' },
     { name: 'Groups & Tags', href: '/groups', icon: Layers, desc: 'Manage your contact lists' },
-    { name: 'Integrations', href: '/integrations', icon: RefreshCw, desc: 'Sync with other platforms' },
+    { name: 'MCP Servers', href: '/mcp', icon: RefreshCw, badge: 'NEW', desc: 'Connect AI Context Servers' },
     { name: 'Support', href: '/support', icon: LifeBuoy, desc: 'Get help and documentation' },
   ];
 
@@ -25,7 +25,7 @@ export default function MenuPage() {
     <div className="max-w-md mx-auto w-full pb-8 animation-fade-in">
       <div className="mb-6 px-2">
         <h1 className="text-2xl font-extrabold tracking-tight">Features</h1>
-        <p className="text-muted-foreground text-sm mt-1">Explore all the tools available in your BlackBook.</p>
+        <p className="text-muted-foreground text-sm mt-1">Explore all the tools available in your Whitebook.</p>
       </div>
 
       <div className="space-y-2">

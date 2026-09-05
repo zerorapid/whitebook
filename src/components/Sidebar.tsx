@@ -24,7 +24,7 @@ export default function Sidebar() {
 
   const tools = [
     { name: 'Dude', href: '/assistant', icon: Sparkles },
-    { name: 'Sync & Integrations', href: '/integrations', icon: RefreshCw },
+    { name: 'MCP Hub', href: '/mcp', icon: RefreshCw },
   ];
 
   const system = [
