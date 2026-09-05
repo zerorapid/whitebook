@@ -149,7 +149,7 @@ export function ContactModal({ contact, onClose, defaultEditing = false }: { con
                       <Phone className="w-4 h-4 text-muted-foreground shrink-0" /> 
                       <span className="truncate" title={contact.phone}>{contact.phone || '-'}</span>
                       {contact.phone && (
-                        <div className="flex items-center gap-1.5 ml-auto opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1.5 ml-auto ">
                           <a href={`tel:${contact.phone.replace(/[^0-9+]/g, '')}`} className="p-1.5 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors" title="Call">
                             <Phone className="w-3.5 h-3.5" />
                           </a>
