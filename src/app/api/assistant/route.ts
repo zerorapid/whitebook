@@ -12,7 +12,15 @@ export async function POST(req: Request) {
     You have access to the user's private network directory. 
     Here are their contacts in JSON format: ${JSON.stringify(contacts)}
     
-    Answer the user's questions about their contacts. If they ask to find duplicates, analyze the names and emails and list them clearly. Be concise, professional, and directly helpful. Do not output markdown code blocks for normal text.`;
+    Answer the user's questions about their contacts accurately based ONLY on the provided JSON. 
+    Be concise, professional, and directly helpful. Do not output markdown code blocks for normal text.
+
+    CRITICAL INSTRUCTION FOR SEARCHING/LISTING:
+    If the user asks you to find, search for, or list specific contacts (e.g. "Who do I know in NY?", "List all CEOs"), you MUST append a special tag at the very end of your response containing a JSON array of their exact contact IDs.
+    
+    Example format:
+    Here are the CEOs in your network:
+    <CONTACTS>[3, 14, 27]</CONTACTS>`;
 
     const groq = getGroqClient();
     const chatCompletion = await groq.chat.completions.create({

@@ -3,6 +3,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Bot, Send, User, Sparkles, Camera, X, Mic, Loader2 } from 'lucide-react';
 import { useStore } from '@/lib/store';
 
+import { MiniContactCard } from '@/components/MiniContactCard';
+
 type Message = { role: 'ai' | 'user'; text: string; image?: string };
 
 export default function AssistantPage() {
@@ -26,6 +28,37 @@ export default function AssistantPage() {
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, selectedImage]);
+
+  const renderMessageContent = (text: string) => {
+    const match = text.match(/<CONTACTS>(\[.*?\])<\/CONTACTS>/);
+    let cleanText = text;
+    let contactIds: any[] = [];
+    
+    if (match) {
+      cleanText = text.replace(match[0], '').trim();
+      try {
+        contactIds = JSON.parse(match[1]);
+      } catch(e) {}
+    }
+    
+    return (
+      <div className="flex flex-col w-full">
+        <div className="space-y-2">
+          {cleanText.split('\n').map((line, j) => (
+            <p key={j}>{line}</p>
+          ))}
+        </div>
+        {contactIds.length > 0 && (
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+            {contactIds.map(id => {
+              const c = contacts.find((c: any) => c.id === id);
+              return c ? <MiniContactCard key={id} contact={c} /> : null;
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const startRecording = async () => {
     try {
@@ -170,10 +203,12 @@ Please acknowledge the card details, summarize who they are, and ask if I should
                 </div>
               )}
               {msg.text && (
-                <div className={`rounded-2xl p-4 text-sm shadow-sm ${msg.role === 'user' ? (msg.image ? 'bg-secondary text-foreground rounded-tr-none mt-1' : 'bg-secondary text-foreground rounded-tr-none') : 'bg-primary/10 border border-primary/20 text-foreground rounded-tl-none'}`}>
-                  {msg.text.split('\n').map((line, j) => (
-                    <p key={j} className={j > 0 ? 'mt-2' : ''}>{line}</p>
-                  ))}
+                <div className={`rounded-2xl p-4 text-sm shadow-sm ${msg.role === 'user' ? (msg.image ? 'bg-secondary text-foreground rounded-tr-none mt-1' : 'bg-secondary text-foreground rounded-tr-none') : 'bg-primary/10 border border-primary/20 text-foreground rounded-tl-none w-full'}`}>
+                  {msg.role === 'ai' ? renderMessageContent(msg.text) : (
+                    msg.text.split('\n').map((line, j) => (
+                      <p key={j} className={j > 0 ? 'mt-2' : ''}>{line}</p>
+                    ))
+                  )}
                 </div>
               )}
             </div>
