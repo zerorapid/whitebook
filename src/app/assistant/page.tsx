@@ -287,13 +287,17 @@ Please acknowledge the card details, summarize who they are, and ask if I should
             }
             className="w-full bg-background border rounded-full py-4 pl-24 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm disabled:opacity-70 disabled:bg-muted/50"
           />
-          <button 
-            type="submit" 
-            disabled={isLoading || (!input.trim() && !selectedImage)}
-            className="absolute right-2 w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center hover:bg-primary/90 disabled:opacity-50 transition-all z-10"
-          >
-            <Send className="w-4 h-4" />
-          </button>
+          <div className="absolute right-2 z-10">
+            <MetalFx preset="chromatic" strength={1} theme="dark">
+              <button 
+                type="submit" 
+                disabled={isLoading || (!input.trim() && !selectedImage)}
+                className="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center hover:bg-primary/90 disabled:opacity-50 transition-all"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </MetalFx>
+          </div>
         </form>
       </div>
 
