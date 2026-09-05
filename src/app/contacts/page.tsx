@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { 
-  Search, Plus, Filter, 
+  Search, Plus, Filter, ArrowDownUp, Tag,
   Mail, Phone, Building2, Star, ArrowUpRight, Sparkles, MapPin, MoreHorizontal
 } from 'lucide-react';
 import { useStore } from '@/lib/store';
