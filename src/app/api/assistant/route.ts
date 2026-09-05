@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   try {
     const { prompt, contacts } = await req.json();
 
-    const systemPrompt = `You are a highly intelligent CRM assistant named 'White Book AI'. 
+    const systemPrompt = `You are a highly intelligent CRM assistant named 'Dude'. 
     You have access to the user's private network directory. 
     Here are their contacts in JSON format: ${JSON.stringify(contacts)}
     

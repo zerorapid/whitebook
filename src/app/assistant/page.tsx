@@ -9,7 +9,7 @@ export default function AssistantPage() {
   const { contacts } = useStore();
   const [messages, setMessages] = useState<Message[]>([{ 
     role: 'ai', 
-    text: "Hello! I am your White Book AI. I can analyze your network, find duplicates, or help you recall who works where. You can also tap the camera icon to scan a business card and ask me to save it!" 
+    text: "Hello! I am Dude. I can analyze your network, find duplicates, or help you recall who works where. You can also tap the camera icon to scan a business card and ask me to save it!" 
   }]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +28,6 @@ export default function AssistantPage() {
     const reader = new FileReader();
     reader.onload = (event) => {
       setSelectedImage(event.target?.result as string);
-      // Optional: focus input after selecting image
     };
     reader.readAsDataURL(file);
   };
@@ -48,9 +47,8 @@ export default function AssistantPage() {
     try {
       let finalPrompt = userText;
 
-      // If an image was attached, we first extract the text using our scanner endpoint
       if (imageToSend) {
-        setMessages(prev => [...prev, { role: 'ai', text: "*Scanning business card...*" }]);
+        setMessages(prev => [...prev, { role: 'ai', text: "*Dude is scanning your business card...*" }]);
         const scanRes = await fetch('/api/scanner', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -60,19 +58,16 @@ export default function AssistantPage() {
         const scanData = await scanRes.json();
         
         if (scanRes.ok && scanData) {
-          // Remove the "Scanning..." message
           setMessages(prev => prev.slice(0, -1));
-          
           finalPrompt = `I just scanned a business card. Here is the extracted data in JSON format: ${JSON.stringify(scanData)}. 
 The user also added this message: "${userText}". 
-Please acknowledge the card details, summarize who they are, and ask if I should add them to the CRM.`;
+Please acknowledge the card details, summarize who they are, and ask if I should add them to the CRM. Your name is Dude.`;
         } else {
           setMessages(prev => prev.slice(0, -1));
-          throw new Error("Failed to read the business card.");
+          throw new Error("Dude failed to read the business card.");
         }
       }
 
-      // Now send to the normal AI assistant
       const res = await fetch('/api/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -86,7 +81,7 @@ Please acknowledge the card details, summarize who they are, and ask if I should
         setMessages(prev => [...prev, { role: 'ai', text: `Error: ${data.error}` }]);
       }
     } catch (err: any) {
-      setMessages(prev => [...prev, { role: 'ai', text: err.message || "Failed to connect to the AI." }]);
+      setMessages(prev => [...prev, { role: 'ai', text: err.message || "Dude is offline." }]);
     } finally {
       setIsLoading(false);
     }
@@ -100,8 +95,8 @@ Please acknowledge the card details, summarize who they are, and ask if I should
           <Sparkles className="w-6 h-6 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight">Network Assistant</h1>
-          <p className="text-sm text-muted-foreground font-medium">Powered by Qwen AI</p>
+          <h1 className="text-xl font-extrabold tracking-tight">Dude</h1>
+          <p className="text-sm text-muted-foreground font-medium">Your Invisible Assistant</p>
         </div>
       </div>
 

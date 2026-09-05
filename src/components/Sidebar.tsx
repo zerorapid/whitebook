@@ -23,7 +23,7 @@ export default function Sidebar() {
   ];
 
   const tools = [
-    { name: 'AI Assistant', href: '/assistant', icon: Sparkles },
+    { name: 'Dude', href: '/assistant', icon: Sparkles },
     { name: 'Sync & Integrations', href: '/integrations', icon: RefreshCw },
   ];
 
