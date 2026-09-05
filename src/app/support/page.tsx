@@ -1,40 +1,122 @@
 "use client";
-import { Book, MessageCircle, Keyboard } from 'lucide-react';
+import { useState } from 'react';
+import { Mail, Book, Keyboard, ChevronDown, MessageSquare, ExternalLink } from 'lucide-react';
+
+const faqs = [
+  {
+    question: "How does the 'Dude' AI assistant work?",
+    answer: "Dude is powered by a locally connected MCP bridge. By connecting your local context, Dude can intelligently analyze your contacts, draft follow-ups, and read context from your files securely, without your private data being sent to third-party databases."
+  },
+  {
+    question: "How do I download the business card to my phone?",
+    answer: "When someone scans your QR code, they are taken to your public profile page. They can tap the 'Save Contact' button, which instantly downloads a universally compatible .vcf file right into their native contacts app (iOS or Android)."
+  },
+  {
+    question: "Does Whitebook work offline?",
+    answer: "Yes! Whitebook is built as an Offline-First Progressive Web App (PWA). If you lose connection at a conference, you can still search your directory and add new contacts. They will sync automatically to the cloud once your connection is restored."
+  },
+  {
+    question: "What happens if I encounter a duplicate contact?",
+    answer: "Whitebook automatically detects duplicates when you import CSV files or scan cards. You can resolve them directly from the Dashboard's notification center, where Dude will suggest merging their details."
+  }
+];
 
 export default function SupportPage() {
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Support & Resources</h1>
-        <p className="text-muted-foreground mt-1">Get help and learn how to use CRM_OS.</p>
+    <div className="max-w-4xl mx-auto space-y-10 pb-12 animate-in fade-in duration-500">
+      
+      {/* Header */}
+      <div className="space-y-1.5">
+        <h1 className="text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-3">
+          <MessageSquare className="w-8 h-8 text-primary" />
+          Help & Support
+        </h1>
+        <p className="text-muted-foreground text-sm font-medium leading-relaxed max-w-2xl">
+          Everything you need to master Whitebook. Explore our frequently asked questions or get in touch directly.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div 
-          onClick={() => alert("Opening Documentation portal...")}
-          className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer group"
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Email Contact Card */}
+        <a 
+          href="mailto:support@whitebook.app"
+          className="bg-primary text-primary-foreground border-transparent rounded-3xl p-8 shadow-sm hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer group flex flex-col justify-between relative overflow-hidden"
         >
-          <Book className="w-8 h-8 text-blue-500 mb-4 group-hover:scale-110 transition-transform" />
-          <h3 className="font-semibold text-lg mb-2">Documentation</h3>
-          <p className="text-sm text-muted-foreground">Read the official guides and tutorials to master the platform.</p>
-        </div>
-        <div 
-          onClick={() => alert("Connecting to chat agent...")}
-          className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer group"
-        >
-          <MessageCircle className="w-8 h-8 text-green-500 mb-4 group-hover:scale-110 transition-transform" />
-          <h3 className="font-semibold text-lg mb-2">Chat Support</h3>
-          <p className="text-sm text-muted-foreground">Talk with our customer success team for direct assistance.</p>
-        </div>
-        <div 
-          onClick={() => alert("Opening Keyboard Shortcuts guide...")}
-          className="rounded-xl border bg-card text-card-foreground shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer group"
-        >
-          <Keyboard className="w-8 h-8 text-purple-500 mb-4 group-hover:scale-110 transition-transform" />
-          <h3 className="font-semibold text-lg mb-2">Keyboard Shortcuts</h3>
-          <p className="text-sm text-muted-foreground">Navigate faster with our comprehensive list of hotkeys.</p>
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-colors"></div>
+          <div>
+            <Mail className="w-10 h-10 mb-6 text-white/90" />
+            <h3 className="font-extrabold text-2xl mb-2">Email Support</h3>
+            <p className="text-primary-foreground/80 font-medium mb-6">
+              Our team typically responds within 2 hours. Send us your bugs, feature requests, or questions.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 font-bold text-sm bg-black/20 w-fit px-4 py-2 rounded-xl backdrop-blur-md">
+            support@whitebook.app <ExternalLink className="w-4 h-4 ml-1 opacity-70" />
+          </div>
+        </a>
+
+        {/* Resources Stack */}
+        <div className="flex flex-col gap-4">
+          <div 
+            onClick={() => alert("Opening Documentation portal...")}
+            className="flex-1 rounded-3xl border border-border/60 bg-card p-6 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-center"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Book className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">Documentation</h3>
+                <p className="text-sm text-muted-foreground font-medium mt-0.5">Comprehensive guides and API refs</p>
+              </div>
+            </div>
+          </div>
+          
+          <div 
+            onClick={() => alert("Opening Keyboard Shortcuts guide...")}
+            className="flex-1 rounded-3xl border border-border/60 bg-card p-6 hover:shadow-sm transition-all cursor-pointer group flex flex-col justify-center"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Keyboard className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">Keyboard Shortcuts</h3>
+                <p className="text-sm text-muted-foreground font-medium mt-0.5">Navigate Whitebook like a pro</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* FAQ Section */}
+      <div className="pt-6">
+        <h2 className="text-2xl font-bold tracking-tight mb-6">Frequently Asked Questions</h2>
+        <div className="bg-card border border-border/60 rounded-3xl overflow-hidden divide-y divide-border/40 shadow-sm">
+          {faqs.map((faq, index) => (
+            <div key={index} className="flex flex-col">
+              <button 
+                onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                className="flex items-center justify-between p-6 w-full text-left hover:bg-muted/30 transition-colors focus:outline-none"
+              >
+                <span className="font-semibold text-[15px] pr-4">{faq.question}</span>
+                <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-300 shrink-0 ${openFaq === index ? 'rotate-180' : ''}`} />
+              </button>
+              <div 
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${openFaq === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
+              >
+                <div className="p-6 pt-0 text-muted-foreground text-sm leading-relaxed font-medium">
+                  {faq.answer}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 }
