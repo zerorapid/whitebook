@@ -13,34 +13,59 @@ export default function ContactsDirectory() {
   const [selectedContact, setSelectedContact] = useState<any | null>(null);
   const { contacts } = useStore();
 
-  const formatLocationShortcut = (loc: string) => {
-    if (!loc) return '-';
-    let cleanLoc = loc.replace(/,\s*(USA|United States|India|UK|United Kingdom)$/i, '').trim();
-    
-    // Handle Indian format "City - PIN"
-    const pinMatch = cleanLoc.match(/(.+?)\s*-\s*\d{6}$/);
-    if (pinMatch) {
-       const parts = pinMatch[1].split(',');
-       return parts[parts.length - 1].trim();
-    }
-
-    cleanLoc = cleanLoc.replace(/\b([A-Z]{2})\s+\d{5}(?:-\d{4})?\b/gi, '$1');
-    const parts = cleanLoc.split(',').map(s => s.trim());
-    if (parts.length >= 3) {
-      return parts[parts.length - 2] + ', ' + parts[parts.length - 1];
-    }
-    const stateMap: Record<string, string> = {
-      "california": "CA", "new york": "NY", "texas": "TX", "florida": "FL",
-      "washington": "WA", "illinois": "IL", "pennsylvania": "PA", "georgia": "GA",
-      "tamil nadu": "TN", "delhi": "DL", "maharashtra": "MH", "karnataka": "KA"
-    };
-    if (parts.length === 2) {
-      const state = parts[1].toLowerCase();
-      if (stateMap[state]) {
-        return parts[0] + ', ' + stateMap[state];
+    const formatLocationShortcut = (loc: string) => {
+      if (!loc) return '-';
+      let cleanLoc = loc.replace(/,\s*(USA|United States|India|UK|United Kingdom)$/i, '').trim();
+  
+      const cityToState = {
+        "bangalore": "KA", "bengaluru": "KA", "delhi": "DL", "new delhi": "DL",
+        "ahmedabad": "GJ", "surat": "GJ", "mumbai": "MH", "pune": "MH",
+        "jaipur": "RJ", "chennai": "TN", "kolkata": "WB", "hyderabad": "TS"
+      };
+  
+      let extractedCity = "";
+  
+      const pinMatch = cleanLoc.match(/(.+?)\s*-\s*\d{6}$/);
+      if (pinMatch) {
+         const parts = pinMatch[1].split(',');
+         extractedCity = parts[parts.length - 1].trim();
+      } else {
+         cleanLoc = cleanLoc.replace(/\b([A-Z]{2})\s+\d{5}(?:-\d{4})?\b/gi, '$1');
+         const parts = cleanLoc.split(',').map(s => s.trim());
+         
+         if (parts.length >= 3) {
+           return parts[parts.length - 2] + ', ' + parts[parts.length - 1];
+         }
+         if (parts.length === 2) {
+           const stateMap = {
+             "california": "CA", "new york": "NY", "texas": "TX", "florida": "FL",
+             "washington": "WA", "illinois": "IL", "pennsylvania": "PA", "georgia": "GA",
+             "tamil nadu": "TN", "delhi": "DL", "maharashtra": "MH", "karnataka": "KA",
+             "telangana": "TS", "gujarat": "GJ", "rajasthan": "RJ", "west bengal": "WB"
+           };
+           const state = parts[1].toLowerCase();
+           if (stateMap[state]) {
+             return parts[0] + ', ' + stateMap[state];
+           }
+           if (state.length === 2) {
+             return parts[0] + ', ' + state.toUpperCase();
+           }
+           extractedCity = parts[0];
+         } else {
+           extractedCity = cleanLoc;
+         }
       }
-    }
-    return cleanLoc;
+  
+      if (extractedCity) {
+        const cityKey = extractedCity.toLowerCase();
+        if (cityToState[cityKey]) {
+           const properCity = extractedCity.charAt(0).toUpperCase() + extractedCity.slice(1);
+           return properCity + ", " + cityToState[cityKey];
+        }
+        return extractedCity;
+      }
+  
+      return cleanLoc;
   };
 
   const filteredContacts = useMemo(() => {
