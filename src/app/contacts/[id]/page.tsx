@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { 
   ArrowLeft, Mail, MapPin, Briefcase, Calendar, Building2, 
   Globe, Users, Phone, Edit2, MoreHorizontal, Archive, 
-  Trash2, X, FileText, Camera, Paperclip, Clock, CalendarClock, Download
+  Trash2, X, FileText, Camera, Paperclip, Clock, CalendarClock, Download,
+  Linkedin, Twitter, Instagram
 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { useStore } from '@/lib/store';
@@ -214,6 +215,42 @@ export default function ContactDetail({ params }: { params: { id: string } }) {
 
         {/* Sidebar Widgets */}
         <div className="space-y-6">
+          <div className="bg-card rounded-2xl border shadow-sm p-6">
+            <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-4">Social Profiles</h3>
+            <div className="flex gap-3">
+              <a 
+                href={contact.linkedin || '#'} 
+                target={contact.linkedin ? "_blank" : "_self"}
+                className={`p-2.5 rounded-xl transition-colors flex items-center justify-center ${contact.linkedin ? 'bg-[#0077b5]/10 text-[#0077b5] hover:bg-[#0077b5]/20' : 'bg-muted text-muted-foreground/40 cursor-not-allowed grayscale'}`}
+              >
+                 <Linkedin className="w-5 h-5" />
+              </a>
+              <a 
+                href={contact.twitter || '#'} 
+                target={contact.twitter ? "_blank" : "_self"}
+                className={`p-2.5 rounded-xl transition-colors flex items-center justify-center ${contact.twitter ? 'bg-black/5 text-black dark:bg-white/10 dark:text-white hover:bg-black/10 dark:hover:bg-white/20' : 'bg-muted text-muted-foreground/40 cursor-not-allowed grayscale'}`}
+              >
+                 <Twitter className="w-5 h-5" />
+              </a>
+              <a 
+                href={contact.instagram || '#'} 
+                target={contact.instagram ? "_blank" : "_self"}
+                className={`p-2.5 rounded-xl transition-colors flex items-center justify-center ${contact.instagram ? 'bg-[#e1306c]/10 text-[#e1306c] hover:bg-[#e1306c]/20' : 'bg-muted text-muted-foreground/40 cursor-not-allowed grayscale'}`}
+              >
+                 <Instagram className="w-5 h-5" />
+              </a>
+            </div>
+          </div>
+
+          {contact.business_card_image && (
+            <div className="bg-card rounded-2xl border shadow-sm p-6">
+              <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-4">Physical Card</h3>
+              <a href={contact.business_card_image} target="_blank" rel="noreferrer" className="block rounded-xl overflow-hidden border shadow-sm hover:opacity-90 transition-opacity">
+                 <img src={contact.business_card_image} alt="Visiting Card" className="w-full object-cover" />
+              </a>
+            </div>
+          )}
+
           <div className="bg-card rounded-2xl border shadow-sm p-6">
             <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-4">Tags & Cohorts</h3>
             <div className="flex flex-wrap gap-2">

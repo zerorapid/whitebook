@@ -118,6 +118,7 @@ export default function ScannerPage() {
           location: data.location || '',
           website: data.website || '',
           notes: data.notes || '',
+          business_card_image: base64,
         });
       } else {
         setErrorMessage(data.error || 'Failed to extract details from the card.');

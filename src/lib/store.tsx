@@ -63,7 +63,11 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
           avatar: c.avatar,
           last_contact: c.last_contact,
           notes: c.notes,
-          tags: c.tags || []
+          tags: c.tags || [],
+          linkedin: c.linkedin,
+          twitter: c.twitter,
+          instagram: c.instagram,
+          business_card_image: c.business_card_image
         };
         
         // Remove undefined fields
