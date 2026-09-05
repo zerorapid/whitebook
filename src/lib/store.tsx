@@ -22,13 +22,21 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     async function loadData() {
       try {
         const { data: contactsData, error: contactsError } = await supabase.from('contacts').select('*');
-        if (!contactsError && contactsData && contactsData.length > 0) {
-          setContacts(contactsData);
+        if (!contactsError && contactsData) {
+          const mergedContacts = [
+            ...contactsData,
+            ...enhancedContacts.map((c: any) => ({ ...c, id: (typeof c.id === 'number' ? c.id + 100000 : c.id + '_dummy') }))
+          ];
+          setContacts(mergedContacts);
         }
         
         const { data: groupsData, error: groupsError } = await supabase.from('groups').select('*');
-        if (!groupsError && groupsData && groupsData.length > 0) {
-          setGroups(groupsData);
+        if (!groupsError && groupsData) {
+          const mergedGroups = [
+            ...groupsData,
+            ...initialGroups.map((g: any) => ({ ...g, id: (typeof g.id === 'number' ? g.id + 100000 : g.id + '_dummy') }))
+          ];
+          setGroups(mergedGroups);
         }
       } catch (err) {
         console.error('Supabase load error:', err);
