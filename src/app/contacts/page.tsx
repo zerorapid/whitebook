@@ -6,9 +6,11 @@ import {
   Mail, Phone, Building2, Star, ArrowUpRight, Sparkles, MapPin, MoreHorizontal
 } from 'lucide-react';
 import { useStore } from '@/lib/store';
+import { ContactModal } from '@/components/ContactModal';
 
 export default function ContactsDirectory() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedContact, setSelectedContact] = useState<any | null>(null);
   const { contacts } = useStore();
 
   const filteredContacts = useMemo(() => {
@@ -96,7 +98,11 @@ export default function ContactsDirectory() {
             </thead>
             <tbody className="divide-y divide-border/40">
               {filteredContacts.map((contact: any) => (
-                <tr key={contact.id} className="hover:bg-muted/20 transition-colors group">
+                <tr 
+                  key={contact.id} 
+                  onClick={() => setSelectedContact(contact)}
+                  className="hover:bg-muted/20 transition-colors group cursor-pointer"
+                >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
                       <img 
@@ -137,20 +143,20 @@ export default function ContactsDirectory() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <a href={`mailto:${contact.email}`} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Email">
+                      <a href={`mailto:${contact.email}`} onClick={e => e.stopPropagation()} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Email">
                         <Mail className="w-4 h-4" />
                       </a>
-                      <a href={`tel:${contact.phone || ''}`} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Call">
+                      <a href={`tel:${contact.phone || ''}`} onClick={e => e.stopPropagation()} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Call">
                         <Phone className="w-4 h-4" />
                       </a>
-                      <Link href={`/contacts/${contact.id}`} className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors" title="View Profile">
+                      <Link href={`/contacts/${contact.id}`} onClick={e => e.stopPropagation()} className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors" title="View Profile">
                         <ArrowUpRight className="w-4 h-4" />
                       </Link>
                     </div>
-                    {/* Fallback for mobile (always visible dots icon that could trigger a menu, but for now just points to profile) */}
-                    <Link href={`/contacts/${contact.id}`} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors md:hidden ml-auto">
+                    {/* Fallback for mobile */}
+                    <button onClick={e => { e.stopPropagation(); setSelectedContact(contact); }} className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors md:hidden ml-auto">
                       <MoreHorizontal className="w-5 h-5" />
-                    </Link>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -166,6 +172,12 @@ export default function ContactsDirectory() {
           </table>
         </div>
       </div>
+      {selectedContact && (
+        <ContactModal 
+          contact={selectedContact} 
+          onClose={() => setSelectedContact(null)} 
+        />
+      )}
     </div>
   );
 }
