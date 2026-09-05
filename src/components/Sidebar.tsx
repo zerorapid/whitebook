@@ -7,13 +7,12 @@ import {
   Scan, Sparkles, Map, RefreshCw, X, LogOut
 } from 'lucide-react';
 
-export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose?: () => void }) {
+export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    if (onClose) onClose();
     router.push('/login');
   };
 
@@ -44,7 +43,6 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose
           <li key={item.name}>
             <Link 
               href={item.href} 
-              onClick={onClose} 
               className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                 isActive 
                   ? 'bg-white/15 text-white font-semibold shadow-sm' 
@@ -67,9 +65,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose
 
   return (
     <aside 
-      className={`fixed inset-y-0 left-0 z-50 w-[82vw] max-w-[280px] md:w-64 bg-[#18181b] text-white flex flex-col transition-transform duration-300 ease-out shadow-2xl md:shadow-none md:translate-x-0 md:static ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      } pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]`}
+      className="hidden md:flex flex-col w-64 bg-[#18181b] text-white shrink-0 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
     >
       {/* Header */}
       <div className="h-16 flex items-center justify-between px-6 border-b border-white/10 shrink-0">
@@ -85,16 +81,6 @@ export default function Sidebar({ isOpen, onClose }: { isOpen?: boolean, onClose
             <path d="M471.7,115.4c-5.4-4.7-14-7-25.7-7H163.5c-12,0-20.7,2.3-25.9,7-5.5,4.6-8.1,12-8.1,22v27.8c0,10.1,2.6,17.6,8.1,22.2,5.4,4.6,14.1,6.9,25.9,6.9h282.4c11.7,0,20.1-2.3,25.7-6.9,5.5-4.6,8.1-12.1,8.1-22.2v-27.8c0-10-2.6-17.4-8.1-22ZM289.9,160.7c0,3.3-2.7,5.9-6,5.9h-117.6c-3.3,0-5.9-2.6-5.9-5.9v-18.8c0-3.3,2.6-5.9,5.9-5.9h117.6c3.3,0,6,2.6,6,5.9v18.8ZM448.9,160.7c0,3.3-2.6,5.9-5.9,5.9h-118.3c-3.3,0-5.9-2.6-5.9-5.9v-18.8c0-3.3,2.6-5.9,5.9-5.9h118.3c3.3,0,5.9,2.6,5.9,5.9v18.8Z"/>
           </svg>
         </div>
-        {onClose && (
-          <button 
-            type="button"
-            className="md:hidden w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-colors"
-            onClick={onClose}
-            aria-label="Close sidebar"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
       </div>
 
       {/* Nav groups */}

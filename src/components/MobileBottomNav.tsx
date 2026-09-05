@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Users, Map, ScanLine, Sparkles, Menu } from 'lucide-react';
 
-export default function MobileBottomNav({ onOpenMenu }: { onOpenMenu: () => void }) {
+export default function MobileBottomNav() {
   const pathname = usePathname();
 
   const navItems = [
@@ -73,16 +73,6 @@ export default function MobileBottomNav({ onOpenMenu }: { onOpenMenu: () => void
             </Link>
           );
         })}
-
-        {/* Menu / More Button */}
-        <button
-          type="button"
-          onClick={onOpenMenu}
-          className="flex flex-col items-center py-1.5 px-3 rounded-2xl text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Menu className="w-5 h-5 stroke-[1.8]" />
-          <span className="text-[10px] mt-1 tracking-tight font-medium">More</span>
-        </button>
       </div>
     </nav>
   );
