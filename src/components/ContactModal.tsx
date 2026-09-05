@@ -81,7 +81,7 @@ export function ContactModal({ contact, onClose }: { contact: any, onClose: () =
                 {isEditing ? (
                   <input 
                     type="text" 
-                    value={formData.role} 
+                    value={formData.role || ""} 
                     onChange={e => setFormData({...formData, role: e.target.value})} 
                     className="text-sm bg-background border px-2 py-1 rounded-md"
                     placeholder="Role"
@@ -93,7 +93,7 @@ export function ContactModal({ contact, onClose }: { contact: any, onClose: () =
                 {isEditing ? (
                   <input 
                     type="text" 
-                    value={formData.company} 
+                    value={formData.company || ""} 
                     onChange={e => setFormData({...formData, company: e.target.value})} 
                     className="text-sm bg-background border px-2 py-1 rounded-md"
                     placeholder="Company"
@@ -122,26 +122,32 @@ export function ContactModal({ contact, onClose }: { contact: any, onClose: () =
             <>
               {/* Contact Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Email</div>
                   {isEditing ? (
-                    <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full text-sm bg-background border px-3 py-2 rounded-lg" />
+                    <input type="email" value={formData.email || ""} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full text-sm bg-background border px-3 py-2 rounded-lg" />
                   ) : (
-                    <div className="flex items-center gap-2 text-sm font-medium"><Mail className="w-4 h-4 text-muted-foreground" /> {contact.email || '-'}</div>
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Mail className="w-4 h-4 text-muted-foreground shrink-0" /> 
+                      <span className="truncate" title={contact.email}>{contact.email || '-'}</span>
+                    </div>
                   )}
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Phone</div>
                   {isEditing ? (
-                    <input type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full text-sm bg-background border px-3 py-2 rounded-lg" />
+                    <input type="tel" value={formData.phone || ""} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full text-sm bg-background border px-3 py-2 rounded-lg" />
                   ) : (
-                    <div className="flex items-center gap-2 text-sm font-medium"><Phone className="w-4 h-4 text-muted-foreground" /> {contact.phone || '-'}</div>
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <Phone className="w-4 h-4 text-muted-foreground shrink-0" /> 
+                      <span className="truncate" title={contact.phone}>{contact.phone || '-'}</span>
+                    </div>
                   )}
                 </div>
                 <div className="space-y-1 md:col-span-2">
                   <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Location</div>
                   {isEditing ? (
-                    <input type="text" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="w-full text-sm bg-background border px-3 py-2 rounded-lg" />
+                    <input type="text" value={formData.location || ""} onChange={e => setFormData({...formData, location: e.target.value})} className="w-full text-sm bg-background border px-3 py-2 rounded-lg" />
                   ) : (
                     <div className="flex items-center gap-2 text-sm font-medium"><MapPin className="w-4 h-4 text-muted-foreground" /> {contact.location || '-'}</div>
                   )}

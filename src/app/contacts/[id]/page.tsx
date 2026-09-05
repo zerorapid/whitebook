@@ -88,7 +88,7 @@ export default function ContactDetail({ params }: { params: { id: string } }) {
           <div className="space-y-1">
             <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
               {contact.name}
-              {contact.tags.includes('VIP') && <span className="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">VIP</span>}
+              {(contact.tags || []).includes('VIP') && <span className="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">VIP</span>}
             </h1>
             <p className="text-lg font-medium text-muted-foreground flex items-center gap-2">
               <Briefcase className="w-4 h-4" /> {contact.role} at <span className="text-foreground font-semibold">{contact.company}</span>
@@ -276,7 +276,7 @@ export default function ContactDetail({ params }: { params: { id: string } }) {
           <div className="bg-card rounded-2xl border shadow-sm p-6">
             <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground mb-4">Tags & Cohorts</h3>
             <div className="flex flex-wrap gap-2">
-              {contact.tags.map((tag: string) => (
+              {(contact.tags || []).map((tag: string) => (
                 <span key={tag} className="px-3 py-1 bg-muted text-foreground text-xs font-semibold rounded-full">
                   {tag}
                 </span>
