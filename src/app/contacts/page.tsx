@@ -66,8 +66,8 @@ export default function ContactsDirectory() {
       </div>
 
       
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 max-w-2xl group">
+      <div className="flex flex-col sm:flex-row justify-between gap-3">
+        <div className="relative w-full sm:max-w-md md:max-w-2xl group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
             <Search className="h-5 w-5" />
           </div>
