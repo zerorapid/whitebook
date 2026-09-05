@@ -15,10 +15,21 @@ interface ExtractedContact {
   notes?: string;
 }
 
+const CATEGORIES = [
+  "Vendors",
+  "Business Partners",
+  "Brands",
+  "Influencers",
+  "Press Media",
+  "Celebrities",
+  "Others"
+];
+
 export default function ScannerPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [extractedData, setExtractedData] = useState<ExtractedContact | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("Business Partners");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -139,7 +150,7 @@ export default function ScannerPage() {
         email: extractedData.email,
         phone: extractedData.phone,
         location: extractedData.location,
-        tags: ["Scanned Card", "New"],
+        tags: [selectedCategory, "Scanned Card"],
         lastContact: "Just added",
         avatar: avatarUrl,
         notes: [
@@ -166,6 +177,7 @@ export default function ScannerPage() {
     if (extractedData.email) params.append('email', extractedData.email);
     if (extractedData.phone) params.append('phone', extractedData.phone);
     if (extractedData.location) params.append('location', extractedData.location);
+    if (selectedCategory) params.append('category', selectedCategory);
     router.push(`/contacts/new?${params.toString()}`);
   };
 
@@ -356,6 +368,31 @@ export default function ScannerPage() {
                 placeholder="City, Country or full address"
                 className="w-full bg-secondary/40 border rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
+            </div>
+
+            <div className="space-y-2 md:col-span-2 pt-1">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                Select Category
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map((cat) => {
+                  const isSelected = selectedCategory === cat;
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+                        isSelected
+                          ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                          : 'bg-secondary/40 hover:bg-secondary border-border/70 text-muted-foreground'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 

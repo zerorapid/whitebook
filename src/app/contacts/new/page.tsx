@@ -22,6 +22,30 @@ function NewContactForm() {
   const [phone, setPhone] = useState(searchParams?.get('phone') || '');
   const [location, setLocation] = useState(searchParams?.get('location') || '');
 
+  const CATEGORIES = [
+    "Vendors",
+    "Business Partners",
+    "Brands",
+    "Influencers",
+    "Press Media",
+    "Celebrities",
+    "Others"
+  ];
+
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
+    const cat = searchParams?.get('category');
+    return cat ? [cat] : ["Business Partners"];
+  });
+
+  const toggleCategory = (cat: string) => {
+    if (selectedCategories.includes(cat)) {
+      if (selectedCategories.length === 1) return; // Keep at least one category selected
+      setSelectedCategories(selectedCategories.filter(c => c !== cat));
+    } else {
+      setSelectedCategories([...selectedCategories, cat]);
+    }
+  };
+
   useEffect(() => {
     if (searchParams) {
       if (searchParams.get('name')) setName(searchParams.get('name') || '');
@@ -30,6 +54,7 @@ function NewContactForm() {
       if (searchParams.get('email')) setEmail(searchParams.get('email') || '');
       if (searchParams.get('phone')) setPhone(searchParams.get('phone') || '');
       if (searchParams.get('location')) setLocation(searchParams.get('location') || '');
+      if (searchParams.get('category')) setSelectedCategories([searchParams.get('category')!]);
     }
   }, [searchParams]);
   
@@ -79,7 +104,7 @@ function NewContactForm() {
       email,
       phone,
       location,
-      tags: ["New"],
+      tags: selectedCategories.length > 0 ? selectedCategories : ["Others"],
       lastContact: "Never",
       avatar: displayAvatar
     });
@@ -229,6 +254,33 @@ function NewContactForm() {
                 placeholder="e.g. San Francisco, CA" 
                 className="w-full p-3 bg-background border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary text-foreground" 
               />
+            </div>
+
+            <div className="space-y-3 md:col-span-2">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Category</label>
+                <p className="text-xs text-muted-foreground mt-0.5">Choose one or more categories for this connection:</p>
+              </div>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {CATEGORIES.map((cat) => {
+                  const isSelected = selectedCategories.includes(cat);
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => toggleCategory(cat)}
+                      className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+                        isSelected 
+                          ? 'bg-primary text-primary-foreground border-primary shadow-sm' 
+                          : 'bg-background hover:bg-secondary border-border text-muted-foreground'
+                      }`}
+                    >
+                      {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-current" />}
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
           

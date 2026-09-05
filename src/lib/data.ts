@@ -7,10 +7,13 @@ export const contacts = [
 ];
 
 export const groups = [
-  { id: 1, name: 'VIP Clients', count: 12, icon: 'star', color: '#f59e0b' },
-  { id: 2, name: 'Investors', count: 8, icon: 'trending-up', color: '#10b981' },
-  { id: 3, name: 'Tech Partners', count: 24, icon: 'terminal', color: '#3b82f6' },
-  { id: 4, name: 'Alumni', count: 45, icon: 'graduation-cap', color: '#8b5cf6' },
+  { id: 1, name: 'Vendors', count: 0, icon: 'briefcase', color: '#f59e0b' },
+  { id: 2, name: 'Business Partners', count: 0, icon: 'users', color: '#10b981' },
+  { id: 3, name: 'Brands', count: 0, icon: 'star', color: '#3b82f6' },
+  { id: 4, name: 'Influencers', count: 0, icon: 'sparkles', color: '#ec4899' },
+  { id: 5, name: 'Press Media', count: 0, icon: 'newspaper', color: '#8b5cf6' },
+  { id: 6, name: 'Celebrities', count: 0, icon: 'award', color: '#ef4444' },
+  { id: 7, name: 'Others', count: 0, icon: 'folder', color: '#64748b' },
 ];
 
 
