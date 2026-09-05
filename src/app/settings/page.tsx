@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { 
   User, Shield, Bell, AlertTriangle, Save, 
-  Camera, Check, Smartphone, Key, Mail, Lock
+  Camera, Check, Smartphone, Key, Mail, Lock, Database, Download, Upload
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
@@ -29,6 +29,7 @@ export default function SettingsPage() {
     { id: 'profile', name: 'My Profile', icon: User },
     { id: 'security', name: 'Security', icon: Shield },
     { id: 'notifications', name: 'Notifications', icon: Bell },
+    { id: 'data', name: 'Data & Import', icon: Database },
   ];
 
   return (
@@ -120,6 +121,47 @@ export default function SettingsPage() {
                       className="flex items-center justify-center gap-2 px-6 h-11 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:opacity-90 active:scale-95 transition-all"
                     >
                       {isLoading ? <span className="animate-pulse">Saving...</span> : <><Save className="w-4 h-4" /> Save Changes</>}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DATA & IMPORT TAB */}
+          {activeTab === 'data' && (
+            <div className="space-y-6">
+              <div className="bg-card border border-border/40 rounded-3xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold tracking-tight mb-6 flex items-center gap-2">
+                  <Database className="w-5 h-5 text-primary" /> Data Management
+                </h2>
+                
+                <div className="grid sm:grid-cols-2 gap-6">
+                  {/* Export Card */}
+                  <div className="border border-border/60 rounded-2xl p-5 flex flex-col justify-between hover:border-primary/50 transition-colors group bg-muted/10">
+                    <div>
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <Download className="w-5 h-5 text-primary" />
+                      </div>
+                      <h3 className="font-bold text-base mb-1">Export Contacts</h3>
+                      <p className="text-sm text-muted-foreground mb-6">Download your entire directory as a standard CSV file for backups or external use.</p>
+                    </div>
+                    <button className="w-full flex items-center justify-center gap-2 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl text-sm font-bold transition-all group-hover:bg-primary group-hover:text-primary-foreground">
+                      <Download className="w-4 h-4" /> Export to CSV
+                    </button>
+                  </div>
+
+                  {/* Import Card */}
+                  <div className="border border-border/60 rounded-2xl p-5 flex flex-col justify-between hover:border-primary/50 transition-colors group bg-muted/10">
+                    <div>
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <Upload className="w-5 h-5 text-primary" />
+                      </div>
+                      <h3 className="font-bold text-base mb-1">Import Contacts</h3>
+                      <p className="text-sm text-muted-foreground mb-6">Bulk add contacts by uploading a CSV file. We will automatically map the columns.</p>
+                    </div>
+                    <button className="w-full flex items-center justify-center gap-2 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl text-sm font-bold transition-all group-hover:bg-primary group-hover:text-primary-foreground">
+                      <Upload className="w-4 h-4" /> Import from CSV
                     </button>
                   </div>
                 </div>
