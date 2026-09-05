@@ -76,26 +76,26 @@ export function ContactModal({ contact, onClose, defaultEditing = false }: { con
                 <h2 className="text-2xl font-extrabold tracking-tight">{contact.name}</h2>
               )}
               
-              <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                <Briefcase className="w-4 h-4" />
+              <div className="flex flex-wrap items-center gap-2 text-muted-foreground mt-1">
+                <Briefcase className="w-4 h-4 shrink-0" />
                 {isEditing ? (
                   <input 
                     type="text" 
                     value={formData.role || ""} 
                     onChange={e => setFormData({...formData, role: e.target.value})} 
-                    className="text-sm bg-background border px-2 py-1 rounded-md"
+                    className="flex-1 min-w-[120px] text-sm bg-background border px-2 py-1 rounded-md"
                     placeholder="Role"
                   />
                 ) : (
                   <span className="text-sm font-medium">{contact.role}</span>
                 )}
-                <span>at</span>
+                <span className="shrink-0">at</span>
                 {isEditing ? (
                   <input 
                     type="text" 
                     value={formData.company || ""} 
                     onChange={e => setFormData({...formData, company: e.target.value})} 
-                    className="text-sm bg-background border px-2 py-1 rounded-md"
+                    className="flex-1 min-w-[120px] text-sm bg-background border px-2 py-1 rounded-md"
                     placeholder="Company"
                   />
                 ) : (
@@ -113,7 +113,7 @@ export function ContactModal({ contact, onClose, defaultEditing = false }: { con
               <AlertCircle className="w-8 h-8 mb-1" />
               <div className="font-bold">Delete this contact?</div>
               <div className="text-sm opacity-80 mb-2">This action cannot be undone.</div>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <button onClick={() => setIsDeleting(false)} className="px-4 py-2 bg-background border text-foreground rounded-xl text-sm font-semibold hover:bg-muted transition-colors">Cancel</button>
                 <button onClick={handleDelete} className="px-4 py-2 bg-destructive text-destructive-foreground rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity">Yes, Delete</button>
               </div>
@@ -174,7 +174,7 @@ export function ContactModal({ contact, onClose, defaultEditing = false }: { con
                     </div>
                   </div>
                 ) : (
-                  <div className="flex gap-3">
+                  <div className="flex flex-wrap gap-3">
                     <a href={contact.linkedin || '#'} target={contact.linkedin ? "_blank" : "_self"} className={`p-3 rounded-xl transition-colors flex items-center justify-center ${contact.linkedin ? 'bg-[#0077b5]/10 text-[#0077b5] hover:bg-[#0077b5]/20' : 'bg-muted text-muted-foreground/40 cursor-not-allowed grayscale'}`} title="LinkedIn">
                       <Linkedin className="w-5 h-5" />
                     </a>
@@ -203,7 +203,7 @@ export function ContactModal({ contact, onClose, defaultEditing = false }: { con
 
         {/* Footer Actions */}
         {!isDeleting && (
-          <div className="p-4 bg-muted/10 border-t flex items-center justify-between">
+          <div className="p-4 bg-muted/10 border-t flex flex-wrap items-center justify-between gap-3">
             {!isEditing ? (
               <>
                 <button onClick={() => setIsDeleting(true)} className="p-2.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-xl transition-colors">

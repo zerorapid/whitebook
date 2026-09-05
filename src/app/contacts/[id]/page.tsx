@@ -91,13 +91,14 @@ export default function ContactDetail({ params }: { params: { id: string } }) {
             </div>
           </div>
           
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground flex flex-wrap items-center gap-3">
               {contact.name}
               {(contact.tags || []).includes('VIP') && <span className="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">VIP</span>}
             </h1>
-            <p className="text-lg font-medium text-muted-foreground flex items-center gap-2">
-              <Briefcase className="w-4 h-4" /> {contact.role} at <span className="text-foreground font-semibold">{contact.company}</span>
+            <p className="text-lg font-medium text-muted-foreground flex flex-wrap items-center gap-2">
+              <Briefcase className="w-4 h-4 shrink-0" /> 
+              <span>{contact.role} at <span className="text-foreground font-semibold">{contact.company}</span></span>
             </p>
           </div>
 
