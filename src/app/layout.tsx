@@ -10,6 +10,10 @@ export const metadata: import('next').Metadata = {
   title: "White Book",
   description: "White Book - Private Directory",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icons/icon-192x192.png",
+    apple: "/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
