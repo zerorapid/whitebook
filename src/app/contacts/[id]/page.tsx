@@ -33,13 +33,12 @@ const Instagram = ({ className }: { className?: string }) => (
 );
 
 export default function ContactDetail({ params }: { params: { id: string } }) {
-  const { contacts, updateContact } = useStore();
-  const contact = contacts.find((c: any) => c.id === parseInt(params.id));
+  const { contacts, updateContact, isStoreReady } = useStore();
+  const contact = contacts.find((c: any) => String(c.id) === String(params.id));
   
   const [activeTab, setActiveTab] = useState('notes');
   const [newNote, setNewNote] = useState('');
 
-  
   const handleSaveNote = () => {
     if (!newNote.trim()) return;
     const updatedNotes = (contact.notes ? contact.notes + '\n\n' : '') + newNote;
@@ -47,7 +46,12 @@ export default function ContactDetail({ params }: { params: { id: string } }) {
     setNewNote('');
   };
 
-  if (!contact) return notFound();
+  if (!contact) {
+    if (!isStoreReady) {
+      return <div className="p-10 text-center text-muted-foreground animate-pulse">Loading profile...</div>;
+    }
+    return notFound();
+  }
 
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-500 max-w-5xl mx-auto">

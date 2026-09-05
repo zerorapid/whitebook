@@ -16,6 +16,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [contacts, setContacts] = useState<any[]>(enhancedContacts);
   const [groups, setGroups] = useState<any[]>(initialGroups);
+  const [isStoreReady, setIsStoreReady] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -31,6 +32,8 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (err) {
         console.error('Supabase load error:', err);
+      } finally {
+        setIsStoreReady(true);
       }
     }
     loadData();
@@ -184,7 +187,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
       notifications,
       markAsRead: (id: number) => setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n)),
       markAllAsRead: () => setNotifications(notifications.map(n => ({ ...n, read: true }))),
-      deleteNotification: (id: number) => setNotifications(notifications.filter(n => n.id !== id)),
+      deleteNotification: (id: number) => setNotifications(notifications.filter(n => n.id !== id)), isStoreReady,
     }}>
       {children}
     </StoreContext.Provider>
