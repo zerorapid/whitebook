@@ -21,12 +21,12 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     async function loadData() {
       try {
         const { data: contactsData, error: contactsError } = await supabase.from('contacts').select('*');
-        if (!contactsError && contactsData) {
+        if (!contactsError && contactsData && contactsData.length > 0) {
           setContacts(contactsData);
         }
         
         const { data: groupsData, error: groupsError } = await supabase.from('groups').select('*');
-        if (!groupsError && groupsData) {
+        if (!groupsError && groupsData && groupsData.length > 0) {
           setGroups(groupsData);
         }
       } catch (err) {
