@@ -65,11 +65,14 @@ export default function Dashboard() {
             <h2 className="text-xl font-bold tracking-tight text-primary">Dude's Morning Briefing</h2>
           </div>
           
-          <p className="text-lg sm:text-xl font-medium leading-relaxed text-foreground/90 relative z-10 max-w-2xl">
-            You've added <strong className="text-primary">{recentAdds} new connections</strong> in the last 7 days. 
-            There are <strong className="text-amber-600">{urgentCount} items needing your attention</strong> today, 
-            including a follow-up with {followUps[0]?.name || "a VIP contact"} and {birthdays.length} upcoming birthdays.
-          </p>
+          <div className="space-y-1 relative z-10">
+            <p className="text-xl sm:text-2xl font-semibold text-foreground/90 tracking-tight">
+              You have <strong className="text-amber-600">{urgentCount} items</strong> needing attention today.
+            </p>
+            <p className="text-muted-foreground font-medium text-sm sm:text-base">
+              +{recentAdds} new connections • {followUps.length} follow-ups • {birthdays.length} birthdays
+            </p>
+          </div>
         </div>
 
         {/* Network Velocity (Spans 1 col) */}
