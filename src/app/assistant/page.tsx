@@ -10,6 +10,8 @@ type Message = { role: 'ai' | 'user'; text: string; image?: string };
 
 export default function AssistantPage() {
   const { contacts } = useStore();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const [messages, setMessages] = useState<Message[]>([{ 
     role: 'ai', 
     text: "Hello! I am Dude. I can analyze your network, find duplicates, or help you recall who works where. You can also tap the camera icon to scan a business card and ask me to save it!" 
@@ -313,7 +315,17 @@ Please acknowledge the card details, summarize who they are, and ask if I should
             className="w-full bg-background border rounded-full py-4 pl-24 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm disabled:opacity-70 disabled:bg-muted/50"
           />
           <div className="absolute right-2 z-10">
-            <MetalFx preset="chromatic" strength={1} theme="dark">
+            {mounted ? (
+              <MetalFx preset="chromatic" strength={1} theme="dark">
+                <button 
+                  type="submit" 
+                  disabled={isLoading || (!input.trim() && !selectedImage)}
+                  className="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center hover:bg-primary/90 disabled:opacity-50 transition-all"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </MetalFx>
+            ) : (
               <button 
                 type="submit" 
                 disabled={isLoading || (!input.trim() && !selectedImage)}
@@ -321,7 +333,7 @@ Please acknowledge the card details, summarize who they are, and ask if I should
               >
                 <Send className="w-4 h-4" />
               </button>
-            </MetalFx>
+            )}
           </div>
         </form>
       </div>
