@@ -7,7 +7,23 @@ export default function MCPPage() {
   const [showModal, setShowModal] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
 
-    const toggle = async (name: string) => {
+    
+  const handleAddCustom = () => {
+    const url = window.prompt("Enter your custom MCP Server URL (e.g., http://localhost:3000/sse):");
+    if (url) {
+      const serverName = "Custom: " + url.replace(/^https?:\/\//, '').split('/')[0];
+      setPlatforms([...platforms, {
+        name: serverName,
+        icon: Database,
+        desc: "Custom MCP Server connected via " + url,
+        type: "Custom",
+        status: "active"
+      }]);
+      setConnected([...connected, serverName]);
+    }
+  };
+
+  const toggle = async (name: string) => {
     if (name === 'Local File System') {
       if (connected.includes(name)) {
         setConnected(p => p.filter(n => n !== name));
@@ -45,7 +61,8 @@ export default function MCPPage() {
     }, 120000);
   };
 
-  const platforms = [
+  
+  const [platforms, setPlatforms] = useState([
     { 
       name: "Google Calendar MCP", 
       icon: Globe, 
@@ -74,7 +91,8 @@ export default function MCPPage() {
       type: "Official",
       status: "inactive"
     }
-  ];
+  ]);
+
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700 pb-12">
@@ -146,7 +164,7 @@ export default function MCPPage() {
           <h3 className="font-bold text-lg mb-1">Add Custom MCP Server</h3>
           <p className="text-sm text-muted-foreground">Have a private database or internal tool? Run a custom MCP server script and paste the connection URL here.</p>
         </div>
-        <button className="shrink-0 px-6 py-3 bg-background border-2 border-primary/20 text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all">
+        <button onClick={handleAddCustom} className="shrink-0 px-6 py-3 bg-background border-2 border-primary/20 text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all active:scale-95">
           + Add Connection URL
         </button>
       </div>
