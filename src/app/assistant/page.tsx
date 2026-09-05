@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { Bot, Send, User, Sparkles, Camera, X } from 'lucide-react';
+import { Bot, Send, User, Sparkles, Camera, X, Mic, Loader2 } from 'lucide-react';
 import { useStore } from '@/lib/store';
 
 type Message = { role: 'ai' | 'user'; text: string; image?: string };
@@ -14,12 +14,69 @@ export default function AssistantPage() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<BlobPart[]>([]);
+  
   const endRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, selectedImage]);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        setIsTranscribing(true);
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const formData = new FormData();
+        formData.append('file', audioBlob);
+
+        try {
+          const res = await fetch('/api/transcribe', {
+            method: 'POST',
+            body: formData,
+          });
+          if (res.ok) {
+            const data = await res.json();
+            setInput(prev => prev ? prev + ' ' + data.text : data.text);
+          }
+        } catch (err) {
+          console.error('Transcription failed:', err);
+        } finally {
+          setIsTranscribing(false);
+          stream.getTracks().forEach(track => track.stop());
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Error accessing microphone", err);
+      alert("Could not access microphone.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -169,12 +226,31 @@ Please acknowledge the card details, summarize who they are, and ask if I should
           >
             <Camera className="w-5 h-5" />
           </button>
+
+          <button 
+            type="button"
+            onClick={isRecording ? stopRecording : startRecording}
+            className={`absolute left-12 w-10 h-10 rounded-full flex items-center justify-center transition-all z-10 ${
+              isRecording 
+                ? 'bg-red-500 text-white animate-pulse shadow-md' 
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            }`}
+            title="Voice Note"
+          >
+            {isTranscribing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Mic className="w-5 h-5" />}
+          </button>
+
           <input
             type="text"
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder="Ask about your contacts or scan a business card..."
-            className="w-full bg-background border rounded-full py-4 pl-14 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
+            disabled={isRecording || isTranscribing}
+            placeholder={
+              isRecording ? "Listening..." : 
+              isTranscribing ? "Transcribing..." : 
+              "Ask Dude, take a voice note, or scan a card..."
+            }
+            className="w-full bg-background border rounded-full py-4 pl-24 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm disabled:opacity-70 disabled:bg-muted/50"
           />
           <button 
             type="submit" 
