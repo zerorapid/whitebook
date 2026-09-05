@@ -1,12 +1,25 @@
 "use client";
-import { Bell, Search, Menu } from 'lucide-react';
+import { Bell, Search, Menu, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 
 export default function Topbar() {
+  const pathname = usePathname();
+  const router = useRouter();
+
   return (
     <header className="h-14 md:h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 pt-[env(safe-area-inset-top,0px)]">
-      {/* Mobile brand */}
-      <div className="flex items-center md:hidden">
+      {/* Mobile brand / back button */}
+      <div className="flex items-center gap-1 md:hidden">
+        {pathname !== '/' && (
+          <button 
+            onClick={() => router.back()} 
+            className="p-1.5 -ml-1.5 mr-1 rounded-xl hover:bg-muted text-foreground transition-colors"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+        )}
         <Link href="/" className="font-extrabold tracking-tight text-base py-2">
           WHITE BOOK
         </Link>
