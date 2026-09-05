@@ -1,7 +1,8 @@
 "use client";
 import { useState, useRef, useEffect } from 'react';
-import { Bot, Send, User, Sparkles, Camera, X, Mic, Loader2 } from 'lucide-react';
+import { Bot, Send, User, Sparkles, Camera, X, Mic, Loader2, Wrench, CheckCircle2, XCircle, FileCode2 } from 'lucide-react';
 import { useStore } from '@/lib/store';
+import { MetalFx } from 'metal-fx';
 
 import { MiniContactCard } from '@/components/MiniContactCard';
 
@@ -30,88 +31,112 @@ export default function AssistantPage() {
   }, [messages, selectedImage]);
 
   const renderMessageContent = (text: string) => {
-    const match = text.match(/<CONTACTS>(\[.*?\])<\/CONTACTS>/);
+    const contactsMatch = text.match(/<CONTACTS>(\[.*?\])<\/CONTACTS>/);
     let cleanText = text;
     let contactIds: any[] = [];
     
-    if (match) {
-      cleanText = text.replace(match[0], '').trim();
-      try {
-        contactIds = JSON.parse(match[1]);
-      } catch(e) {}
+    if (contactsMatch) {
+      cleanText = text.replace(contactsMatch[0], '').trim();
+      try { contactIds = JSON.parse(contactsMatch[1]); } catch(e) {}
     }
-    
+
+    const toolMatch = cleanText.match(/<TOOL>(.*?)<\/TOOL>/);
+    let toolName = null;
+    if (toolMatch) {
+      toolName = toolMatch[1];
+      cleanText = cleanText.replace(toolMatch[0], '').trim();
+    }
+
+    const approvalMatch = cleanText.match(/<APPROVAL title="(.*?)">([\s\S]*?)<\/APPROVAL>/);
+    let approvalTitle = null;
+    let approvalBody = null;
+    if (approvalMatch) {
+      approvalTitle = approvalMatch[1];
+      approvalBody = approvalMatch[2];
+      cleanText = cleanText.replace(approvalMatch[0], '').trim();
+    }
+
+    const segments = cleanText.split(/(```[\s\S]*?```)/g);
+
     return (
-      <div className="flex flex-col w-full">
-        <div className="space-y-2">
-          {cleanText.split('\n').map((line, j) => (
-            <p key={j}>{line}</p>
-          ))}
+      <div className="flex flex-col w-full space-y-4">
+        
+        {toolName && (
+          <div className="flex items-center gap-2 text-[11px] font-bold text-amber-600 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 rounded-full w-fit animate-in fade-in zoom-in duration-300">
+            <Wrench className="w-3 h-3" />
+            {toolName}
+          </div>
+        )}
+
+        <div className="space-y-3">
+          {segments.map((segment, idx) => {
+            if (segment.startsWith('```')) {
+              const lines = segment.replace(/^```\w*\n|\n```$/g, '').split('\n');
+              return (
+                <div key={idx} className="my-2 rounded-xl bg-[#1E1E1E] border border-white/10 overflow-hidden shadow-sm">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-black/40 border-b border-white/5 text-white/50 text-xs font-mono font-bold">
+                    <FileCode2 className="w-3.5 h-3.5" /> code snippet
+                  </div>
+                  <div className="p-4 overflow-x-auto text-xs font-mono text-emerald-400">
+                    {lines.map((l, i) => <div key={i}>{l}</div>)}
+                  </div>
+                </div>
+              );
+            } else if (segment.trim().length > 0) {
+              return segment.split('\n').map((line, j) => (
+                <p key={j} className="leading-relaxed">{line}</p>
+              ));
+            }
+            return null;
+          })}
         </div>
+
+        {approvalTitle && (
+          <div className="mt-2 bg-background border border-border/60 rounded-2xl p-4 shadow-sm relative overflow-hidden group animate-in slide-in-from-bottom-2">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
+            <h4 className="font-bold text-sm mb-1">{approvalTitle}</h4>
+            <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{approvalBody}</p>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => alert("Action Approved!")}
+                className="flex-1 bg-primary text-primary-foreground text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" /> Approve
+              </button>
+              <button 
+                onClick={() => alert("Action Rejected")}
+                className="flex-1 bg-muted text-muted-foreground text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-1.5 hover:bg-muted/80 transition-colors"
+              >
+                <XCircle className="w-3.5 h-3.5" /> Reject
+              </button>
+            </div>
+          </div>
+        )}
+
         {contactIds.length > 0 && (
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
-            {contactIds.map(id => {
-              const c = contacts.find((c: any) => c.id === id);
-              return c ? <MiniContactCard key={id} contact={c} /> : null;
-            })}
+          <div className="pt-2">
+            <p className="text-[10px] font-bold text-primary/70 uppercase tracking-wider mb-2">Attached Context</p>
+            <div className="flex flex-col gap-2">
+              {contactIds.map(id => {
+                const c = contacts.find(c => c.id === id);
+                if (!c) return null;
+                return (
+                  <div key={id} className="flex items-center gap-3 bg-card border border-border/40 rounded-xl p-2.5 shadow-sm hover:shadow-md cursor-pointer transition-all">
+                    <img src={c.avatar} className="w-8 h-8 rounded-full bg-secondary" />
+                    <div>
+                      <div className="text-sm font-semibold leading-none">{c.name}</div>
+                      <div className="text-xs text-muted-foreground mt-1">{c.company}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
     );
   };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        setIsTranscribing(true);
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const formData = new FormData();
-        formData.append('file', audioBlob);
-
-        try {
-          const res = await fetch('/api/transcribe', {
-            method: 'POST',
-            body: formData,
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setInput(prev => prev ? prev + ' ' + data.text : data.text);
-          }
-        } catch (err) {
-          console.error('Transcription failed:', err);
-        } finally {
-          setIsTranscribing(false);
-          stream.getTracks().forEach(track => track.stop());
-        }
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-    } catch (err) {
-      console.error("Error accessing microphone", err);
-      alert("Could not access microphone.");
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
