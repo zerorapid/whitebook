@@ -125,13 +125,43 @@ export default function MapPage() {
         }
       }
 
-      const indiaBounds = { n: 28, s: 12, w: 72, e: 85 };
+      const cityCoordinates: Record<string, [number, number]> = {
+        'Mumbai': [19.0760, 72.8777],
+        'Delhi': [28.7041, 77.1025],
+        'Bangalore': [12.9716, 77.5946],
+        'Hyderabad': [17.3850, 78.4867],
+        'Chennai': [13.0827, 80.2707],
+        'Kolkata': [22.5726, 88.3639],
+        'Pune': [18.5204, 73.8567],
+        'Ahmedabad': [23.0225, 72.5714],
+        'Jaipur': [26.9124, 75.7873],
+        'Surat': [21.1702, 72.8311]
+      };
       
       contacts.forEach((contact: any) => {
-        // Generate pseudo-random coordinates based on string so they stay in same place
+        let lat, lng;
+        
+        // Find matching city in the dictionary
+        const matchedCity = Object.keys(cityCoordinates).find(city => 
+          contact.location?.toLowerCase().includes(city.toLowerCase())
+        );
+        
         const hash = contact.name.split('').reduce((a: number, b: string) => a + b.charCodeAt(0), 0);
-        const lat = indiaBounds.s + (hash % 100) / 100 * (indiaBounds.n - indiaBounds.s);
-        const lng = indiaBounds.w + ((hash * 2) % 100) / 100 * (indiaBounds.e - indiaBounds.w);
+        
+        if (matchedCity) {
+          const [baseLat, baseLng] = cityCoordinates[matchedCity];
+          // Add a tiny random offset (~5-10km) so pins don't completely overlap perfectly in the exact same spot
+          const jitterLat = ((hash % 100) / 100 - 0.5) * 0.15;
+          const jitterLng = (((hash * 2) % 100) / 100 - 0.5) * 0.15;
+          
+          lat = baseLat + jitterLat;
+          lng = baseLng + jitterLng;
+        } else {
+          // Fallback pseudo-random for unknown locations inside India bounds
+          const indiaBounds = { n: 28, s: 12, w: 72, e: 85 };
+          lat = indiaBounds.s + (hash % 100) / 100 * (indiaBounds.n - indiaBounds.s);
+          lng = indiaBounds.w + ((hash * 2) % 100) / 100 * (indiaBounds.e - indiaBounds.w);
+        }
 
         const circleMarker = L.circleMarker([lat, lng], {
           color: '#ffffff',
