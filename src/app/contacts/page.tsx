@@ -15,7 +15,15 @@ export default function ContactsDirectory() {
 
   const formatLocationShortcut = (loc: string) => {
     if (!loc) return '-';
-    let cleanLoc = loc.replace(/,\s*(USA|United States|India|UK|United Kingdom)$/i, '');
+    let cleanLoc = loc.replace(/,\s*(USA|United States|India|UK|United Kingdom)$/i, '').trim();
+    
+    // Handle Indian format "City - PIN"
+    const pinMatch = cleanLoc.match(/(.+?)\s*-\s*\d{6}$/);
+    if (pinMatch) {
+       const parts = pinMatch[1].split(',');
+       return parts[parts.length - 1].trim();
+    }
+
     cleanLoc = cleanLoc.replace(/\b([A-Z]{2})\s+\d{5}(?:-\d{4})?\b/gi, '$1');
     const parts = cleanLoc.split(',').map(s => s.trim());
     if (parts.length >= 3) {
