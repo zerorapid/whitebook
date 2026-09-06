@@ -14,8 +14,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession();
       let currentUser = session?.user ?? null;
       
-      if (typeof window !== 'undefined' && localStorage.getItem('demo_bypass') === 'true') {
-        currentUser = { email: 'jaideep@5meventss.com', user_metadata: { name: 'Jaideep Ravi Prakash' } };
+      if (typeof window !== 'undefined') {
+        const bypass = localStorage.getItem('demo_bypass');
+        if (bypass === 'true' || bypass === 'jaideep') {
+          currentUser = { email: 'jaideep@5meventss.com', user_metadata: { name: 'Jaideep Ravi Prakash', company: '5m events' } };
+        } else if (bypass === 'jayapal') {
+          currentUser = { email: 'jayapal@zerorapid.in', user_metadata: { name: 'Jayapal Reddy', company: 'Zerorapid' } };
+        }
       }
 
       setUser(currentUser);
@@ -32,8 +37,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       let currentUser = session?.user ?? null;
-      if (typeof window !== 'undefined' && localStorage.getItem('demo_bypass') === 'true') {
-        currentUser = { email: 'jaideep@5meventss.com', user_metadata: { name: 'Jaideep Ravi Prakash' } };
+      if (typeof window !== 'undefined') {
+        const bypass = localStorage.getItem('demo_bypass');
+        if (bypass === 'true' || bypass === 'jaideep') {
+          currentUser = { email: 'jaideep@5meventss.com', user_metadata: { name: 'Jaideep Ravi Prakash', company: '5m events' } };
+        } else if (bypass === 'jayapal') {
+          currentUser = { email: 'jayapal@zerorapid.in', user_metadata: { name: 'Jayapal Reddy', company: 'Zerorapid' } };
+        }
       }
       setUser(currentUser);
       if (!currentUser && (pathname !== '/login' && !pathname.startsWith('/card'))) {

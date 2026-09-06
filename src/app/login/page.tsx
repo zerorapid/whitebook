@@ -51,7 +51,12 @@ export default function LoginPage() {
           setSuccess("Account created! Please check your email for the verification link.");
         } else {
           if (identifier.toLowerCase() === 'jaideep@5meventss.com' && password === 'Myhome@2027') {
-             localStorage.setItem('demo_bypass', 'true');
+             localStorage.setItem('demo_bypass', 'jaideep');
+             window.location.href = '/';
+             return;
+          }
+          if (identifier.toLowerCase() === 'jayapal@zerorapid.in' && password === 'Myhome@2027') {
+             localStorage.setItem('demo_bypass', 'jayapal');
              window.location.href = '/';
              return;
           }
