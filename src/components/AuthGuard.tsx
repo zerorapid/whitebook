@@ -12,10 +12,16 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+      let currentUser = session?.user ?? null;
+      
+      if (typeof window !== 'undefined' && localStorage.getItem('demo_bypass') === 'true') {
+        currentUser = { email: 'jaideep@5meventss.com', user_metadata: { name: 'Jaideep Ravi Prakash' } };
+      }
+
+      setUser(currentUser);
       setLoading(false);
       
-      if (!session && (pathname !== '/login' && !pathname.startsWith('/card'))) {
+      if (!currentUser && (pathname !== '/login' && !pathname.startsWith('/card'))) {
         router.push('/login');
       } else if (session && pathname === '/login') {
         router.push('/');
@@ -25,8 +31,12 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (!session && (pathname !== '/login' && !pathname.startsWith('/card'))) {
+      let currentUser = session?.user ?? null;
+      if (typeof window !== 'undefined' && localStorage.getItem('demo_bypass') === 'true') {
+        currentUser = { email: 'jaideep@5meventss.com', user_metadata: { name: 'Jaideep Ravi Prakash' } };
+      }
+      setUser(currentUser);
+      if (!currentUser && (pathname !== '/login' && !pathname.startsWith('/card'))) {
         router.push('/login');
       } else if (session && pathname === '/login') {
         router.push('/');

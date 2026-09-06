@@ -14,6 +14,7 @@ export default function Sidebar() {
   const router = useRouter();
   
   const handleLogout = async () => {
+    if (typeof window !== 'undefined') localStorage.removeItem('demo_bypass');
     await supabase.auth.signOut();
     router.push('/login');
   };
