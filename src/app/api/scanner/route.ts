@@ -1,42 +1,34 @@
 import { NextResponse } from 'next/server';
+import Groq from 'groq-sdk';
+
+const getGroqClient = () => new Groq({ apiKey: process.env.GROQ_API_KEY || 'dummy_key_for_build' });
 
 export async function POST(req: Request) {
   try {
-    const { imageBase64 } = await req.json(); // base64 string without data:image prefix
+    const { rawText } = await req.json();
     
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json({ error: 'GEMINI_API_KEY is required for the Business Card Scanner.' }, { status: 400 });
+    if (!rawText || rawText.trim() === '') {
+      return NextResponse.json({ error: 'No text extracted from image.' }, { status: 400 });
     }
 
-    const prompt = `Extract the contact information from this business card. 
-Return ONLY a valid JSON object with these exact keys: name, role, company, email, phone, location, linkedin, website.
+    const systemPrompt = `You are an AI data extractor. I will give you raw, messy text extracted from a business card via OCR. 
+The text might be out of order, have typos, or weird symbols. 
+Your job is to extract the contact information and return ONLY a valid JSON object with these exact keys: name, role, company, email, phone, location, linkedin, website.
 If a field is missing, omit it or leave it blank. Do not include markdown code blocks, just raw JSON.`;
 
-    const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt },
-              { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }
-            ]
-          }
-        ],
-        generationConfig: { temperature: 0.1 }
-      })
+    const groq = getGroqClient();
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: rawText }
+      ],
+      model: 'qwen/qwen3.8-27b',
+      temperature: 0.1,
+      max_tokens: 500,
     });
 
-    if (!geminiResponse.ok) {
-      const errText = await geminiResponse.text();
-      throw new Error("Gemini API error: " + errText);
-    }
-
-    const geminiData = await geminiResponse.json();
-    let reply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    
-    // Clean up if Gemini accidentally returns markdown backticks
+    let reply = chatCompletion.choices[0]?.message?.content || '{}';
+    // Clean up if Groq accidentally returns markdown backticks
     reply = reply.replace(/```json/g, '').replace(/```/g, '').trim();
 
     return NextResponse.json({ contact: JSON.parse(reply) });
