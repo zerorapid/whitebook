@@ -39,9 +39,57 @@ export default function Dashboard() {
           <p className="text-muted-foreground text-sm font-medium">Here is what is happening in your network today.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all">
-            <Camera className="w-4 h-4" /> Scan Badge
-          </button>
+          
+          {/* Hidden File Input for Mobile Camera / Gallery */}
+          <label className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all cursor-pointer">
+            <Camera className="w-4 h-4" />
+            <span id="scan-btn-text">Scan Badge</span>
+            <input 
+              type="file" 
+              accept="image/*" 
+              capture="environment"
+              className="hidden" 
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                
+                const btnText = document.getElementById('scan-btn-text');
+                if (btnText) btnText.innerText = 'Scanning...';
+                
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                  try {
+                    const base64Url = event.target?.result as string;
+                    const base64Data = base64Url.split(',')[1]; // Remove data:image/jpeg;base64,
+                    
+                    const res = await fetch('/api/scanner', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ imageBase64: base64Data })
+                    });
+                    
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error);
+                    
+                    // Redirect to new contact page with pre-filled data
+                    const params = new URLSearchParams();
+                    if (data.contact.name) params.append('name', data.contact.name);
+                    if (data.contact.email) params.append('email', data.contact.email);
+                    if (data.contact.phone) params.append('phone', data.contact.phone);
+                    if (data.contact.company) params.append('company', data.contact.company);
+                    if (data.contact.role) params.append('role', data.contact.role);
+                    if (data.contact.location) params.append('location', data.contact.location);
+                    
+                    window.location.href = `/contacts/new?${params.toString()}`;
+                  } catch (err: any) {
+                    alert('Scan failed: ' + err.message);
+                    if (btnText) btnText.innerText = 'Scan Badge';
+                  }
+                };
+                reader.readAsDataURL(file);
+              }}
+            />
+          </label>
           <Link href="/assistant" className="flex items-center gap-2 px-4 py-2.5 bg-secondary text-secondary-foreground rounded-xl text-sm font-bold shadow-sm hover:bg-secondary/80 active:scale-95 transition-all border border-border/50">
             <MessageSquare className="w-4 h-4" /> Ask Dude
           </Link>

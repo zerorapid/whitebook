@@ -32,19 +32,49 @@ export async function POST(req: Request) {
     <CONTACTS>[1]</CONTACTS>`;
 
     const groq = getGroqClient();
-    const chatCompletion = await groq.chat.completions.create({
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: prompt }
-      ],
-      model: 'qwen/qwen3.8-27b',
-      temperature: 0.2,
-      max_tokens: 500,
-    });
+    
+    try {
+      // 1. Try Groq (Primary)
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt }
+        ],
+        model: 'llama-3.1-8b-instant', // Faster and more stable model
+        temperature: 0.2,
+        max_tokens: 500,
+      });
 
-    return NextResponse.json({ reply: chatCompletion.choices[0]?.message?.content || 'No response' });
+      return NextResponse.json({ reply: chatCompletion.choices[0]?.message?.content || 'No response' });
+    } catch (groqError: any) {
+      console.warn('Groq failed or rate limited, falling back to Gemini:', groqError.message);
+      
+      // 2. Graceful Fallback to Gemini (Secondary)
+      if (!process.env.GEMINI_API_KEY) {
+        throw new Error("Groq failed, and GEMINI_API_KEY is not set for fallback.");
+      }
+
+      const geminiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: { text: systemPrompt } },
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 500 }
+        })
+      });
+
+      if (!geminiResponse.ok) {
+        throw new Error("Both Groq and Gemini fallback failed.");
+      }
+
+      const geminiData = await geminiResponse.json();
+      const reply = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+      
+      return NextResponse.json({ reply });
+    }
   } catch (error: any) {
-    console.error('Groq Error:', error);
+    console.error('API Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
