@@ -288,7 +288,13 @@ export default function SettingsPage() {
                     Scan this QR code with any smartphone camera to instantly save your profile directly to their contacts. No app required for them.
                   </p>
                   <div className="pt-2">
-                    <button className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-bold rounded-xl hover:opacity-90 transition-opacity shadow-sm">
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(getCardUrl());
+                        alert("Profile link copied to clipboard!");
+                      }}
+                      className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-bold rounded-xl hover:opacity-90 transition-opacity shadow-sm"
+                    >
                       Share Profile Link
                     </button>
                   </div>
