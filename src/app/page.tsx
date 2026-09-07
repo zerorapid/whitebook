@@ -8,7 +8,7 @@ import {
 import { useStore } from '@/lib/store';
 
 export default function Dashboard() {
-  const { contacts } = useStore();
+  const { contacts, currentUser } = useStore();
   
   // Computed Insights
   const followUps = contacts.filter((c: any) => c.followUp);
@@ -35,7 +35,7 @@ export default function Dashboard() {
       {/* Header & Quick Actions */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-2">
         <div className="space-y-1.5">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">Good morning, Srikanth.</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">Good morning, {currentUser?.user_metadata?.name ? currentUser.user_metadata.name.split(' ')[0] : 'there'}.</h1>
           <p className="text-muted-foreground text-sm font-medium">Here is what is happening in your network today.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">

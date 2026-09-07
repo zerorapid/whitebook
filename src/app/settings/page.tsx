@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   User, Shield, Bell, AlertTriangle, Save, 
   Camera, Check, Smartphone, Key, Mail, Lock, Database, Download, Upload
@@ -10,12 +10,25 @@ import { useStore } from '@/lib/store';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { contacts, addContact } = useStore();
+  const { contacts, addContact, currentUser } = useStore();
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoading, setIsLoading] = useState(false);
 
   // Form states
-  const [profile, setProfile] = useState({ name: 'Srikanth', role: 'Event Organizer', company: 'Whitebook Events', email: 'srikanth@whitebook.app', phone: '+919876543210', linkedin: 'https://linkedin.com/in/srikanth' });
+  const [profile, setProfile] = useState({ name: '', role: '', company: '', email: '', phone: '', linkedin: '' });
+
+  useEffect(() => {
+    if (currentUser) {
+      setProfile({
+        name: currentUser.user_metadata?.name || '',
+        role: currentUser.user_metadata?.role || '',
+        company: currentUser.user_metadata?.company || '',
+        email: currentUser.email || '',
+        phone: currentUser.user_metadata?.phone || '',
+        linkedin: ''
+      });
+    }
+  }, [currentUser]);
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   
   // Toggles for notifications

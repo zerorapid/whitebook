@@ -17,6 +17,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   const [contacts, setContacts] = useState<any[]>(enhancedContacts);
   const [groups, setGroups] = useState<any[]>(initialGroups);
   const [isStoreReady, setIsStoreReady] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   
   useEffect(() => {
@@ -31,6 +32,18 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
       try {
         // 2. Fetch fresh from Supabase
+        const { data: { session } } = await supabase.auth.getSession();
+        let user = session?.user ?? null;
+        if (typeof window !== 'undefined') {
+          const bypass = localStorage.getItem('demo_bypass');
+          if (bypass === 'true' || bypass === 'jaideep') {
+            user = { email: 'jaideep@5meventss.com', user_metadata: { name: 'Jaideep Ravi Prakash', company: '5m events', role: 'Founder' } };
+          } else if (bypass === 'jayapal') {
+            user = { email: 'jayapal@zerorapid.in', user_metadata: { name: 'Jayapal Reddy', company: 'Zerorapid', role: 'Founder' } };
+          }
+        }
+        setCurrentUser(user);
+
         const { data: contactsData, error: contactsError } = await supabase.from('contacts').select('*');
         if (!contactsError && contactsData) {
           const mergedContacts = [
@@ -97,6 +110,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <StoreContext.Provider value={{
+      currentUser,
       contacts,
       addContact: async (c: any) => {
         // Optimistic UI with temporary ID if missing
