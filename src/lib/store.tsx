@@ -21,6 +21,42 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
   
   useEffect(() => {
+
+    async function processQueue() {
+      if (typeof window === 'undefined') return;
+      const queue = JSON.parse(localStorage.getItem('wb_offline_queue') || '[]');
+      if (queue.length === 0) return;
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return; // Can't sync without auth
+      
+      let successfulQueue: any[] = [];
+      for (const item of queue) {
+        try {
+          if (item.action === 'INSERT_CONTACT') {
+            item.payload.user_id = session.user.id;
+            const { error } = await supabase.from('contacts').insert([item.payload]);
+            if (error) throw error;
+          } else if (item.action === 'UPDATE_CONTACT') {
+            const { error } = await supabase.from('contacts').update(item.payload).eq('id', item.id);
+            if (error) throw error;
+          }
+        } catch (e) {
+          console.error("Failed to sync item:", item, e);
+          successfulQueue.push(item); // keep it in queue if failed
+        }
+      }
+      localStorage.setItem('wb_offline_queue', JSON.stringify(successfulQueue));
+      if (queue.length > successfulQueue.length) {
+        // Some items synced successfully, reload data
+        const { data: contactsData } = await supabase.from('contacts').select('*');
+        if (contactsData) {
+          setContacts(contactsData);
+          localStorage.setItem('wb_contacts', JSON.stringify(contactsData));
+        }
+      }
+    }
+
     async function loadData() {
       // 1. Instant Offline Load from PWA Cache (LocalStorage)
       if (typeof window !== 'undefined') {
@@ -34,14 +70,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         // 2. Fetch fresh from Supabase
         const { data: { session } } = await supabase.auth.getSession();
         let user = session?.user ?? null;
-        if (typeof window !== 'undefined') {
-          const bypass = localStorage.getItem('demo_bypass');
-          if (bypass === 'true' || bypass === 'jaideep') {
-            user = { email: 'jaideep@5meventss.com', user_metadata: { name: 'Jaideep Ravi Prakash', company: '5m events', role: 'Founder' } };
-          } else if (bypass === 'jayapal') {
-            user = { email: 'jayapal@zerorapid.in', user_metadata: { name: 'Jayapal Reddy', company: 'Zerorapid', role: 'Founder' } };
-          }
-        }
+
         setCurrentUser(user);
 
         const { data: contactsData, error: contactsError } = await supabase.from('contacts').select('*');

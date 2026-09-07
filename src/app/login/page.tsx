@@ -55,11 +55,7 @@ export default function LoginPage() {
              window.location.href = '/';
              return;
           }
-          if (identifier.toLowerCase() === 'jayapal@zerorapid.in' && password === 'Myhome@2027') {
-             localStorage.setItem('demo_bypass', 'jayapal');
-             window.location.href = '/';
-             return;
-          }
+
           const { error } = await supabase.auth.signInWithPassword({ email: identifier, password });
           if (error) throw error;
           // Successful login handles redirect via AuthGuard
