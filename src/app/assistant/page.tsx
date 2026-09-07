@@ -2,6 +2,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Bot, Send, User, Sparkles, Camera, X, Mic, Loader2, Wrench, CheckCircle2, XCircle, FileCode2 } from 'lucide-react';
 import { useStore } from '@/lib/store';
+import Tesseract from 'tesseract.js';
+// from '@/lib/store';
 
 
 import { MiniContactCard } from '@/components/MiniContactCard';

@@ -8,7 +8,7 @@ export default function Topbar() {
   const router = useRouter();
 
   return (
-    <header className="h-14 md:h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 pt-[env(safe-area-inset-top,0px)]">
+    <header className="min-h-14 md:min-h-16 py-2 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 pt-[env(safe-area-inset-top,0px)]">
       {/* Mobile brand / back button */}
       <div className="flex items-center gap-1 md:hidden">
         {pathname !== '/' && (
