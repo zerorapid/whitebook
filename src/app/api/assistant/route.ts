@@ -40,7 +40,7 @@ export async function POST(req: Request) {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
         ],
-        model: 'llama-3.1-8b-instant', // Faster and more stable model
+        model: 'qwen/qwen3.8-27b', // Faster and more stable model
         temperature: 0.2,
         max_tokens: 500,
       });
