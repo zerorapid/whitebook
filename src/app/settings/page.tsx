@@ -66,59 +66,41 @@ export default function SettingsPage() {
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
     setIsLoading(true);
+
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {
         const text = event.target?.result as string;
-        const lines = text.split('\n').filter(line => line.trim() !== '');
-        if (lines.length < 2) {
-          alert('File is empty or invalid.');
-          return;
-        }
+        const lines = text.split('\n');
+        if (lines.length < 2) throw new Error("CSV is empty or missing headers");
         
-        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase());
-        let importCount = 0;
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+        let imported = 0;
         
         for (let i = 1; i < lines.length; i++) {
-          const line = lines[i];
-          const parsedVals: string[] = [];
-          let inQuotes = false;
-          let currentVal = '';
-          for (let j = 0; j < line.length; j++) {
-            const char = line[j];
-            if (char === '"' && line[j+1] === '"') { currentVal += '"'; j++; }
-            else if (char === '"') { inQuotes = !inQuotes; }
-            else if (char === ',' && !inQuotes) { parsedVals.push(currentVal); currentVal = ''; }
-            else { currentVal += char; }
-          }
-          parsedVals.push(currentVal);
-
+          if (!lines[i].trim()) continue;
+          // Split by comma ignoring commas inside quotes
+          const regex = /(".*?"|[^",\s]+|)(?=\s*,|\s*$)/g;
+          const matches = [...lines[i].matchAll(regex)].map(m => m[0]);
+          const cleanValues = matches.filter((_, idx) => idx % 2 === 0).map(v => v.trim().replace(/^"|"$/g, ''));
+          
           const contact: any = {};
           headers.forEach((h, idx) => {
-            const val = parsedVals[idx]?.trim().replace(/^"|"$/g, '') || '';
-            if (h.includes('name')) contact.name = val;
-            else if (h.includes('phone') || h.includes('tel')) contact.phone = val;
-            else if (h.includes('email')) contact.email = val;
-            else if (h.includes('company') || h.includes('org')) contact.company = val;
-            else if (h.includes('role') || h.includes('title')) contact.role = val;
-            else if (h.includes('loc')) contact.location = val;
-            else if (h.includes('tag')) contact.tags = val.split(';').map((t: string) => t.trim()).filter(Boolean);
-            else if (h.includes('note')) contact.notes = val;
+            if (cleanValues[idx] && cleanValues[idx] !== '') contact[h] = cleanValues[idx];
           });
-
-          if (contact.name) {
-            contact.id = Date.now() + Math.random();
-            contact.avatar = `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(contact.name)}&backgroundColor=transparent`;
+          
+          if (contact.name || contact.email) {
+            if (contact.tags && typeof contact.tags === 'string') {
+               contact.tags = contact.tags.split(';').map((t: string) => t.trim());
+            }
             await addContact(contact);
-            importCount++;
+            imported++;
           }
         }
-        alert(`Successfully imported ${importCount} contacts!`);
-      } catch (err) {
-        console.error(err);
-        alert('Failed to import contacts. Please check the CSV format.');
+        alert(`Successfully imported ${imported} contacts!`);
+      } catch (err: any) {
+        alert("Failed to import CSV: " + err.message);
       } finally {
         setIsLoading(false);
       }
@@ -139,9 +121,29 @@ export default function SettingsPage() {
     return `${window.location.origin}/card?${params.toString()}`;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 800);
+    try {
+      const bypass = typeof window !== 'undefined' ? localStorage.getItem('demo_bypass') : null;
+      if (bypass) {
+        alert("Profile saved locally! (Cloud sync requires email verification)");
+        return;
+      }
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          name: profile.name,
+          role: profile.role,
+          company: profile.company,
+          phone: profile.phone
+        }
+      });
+      if (error) throw error;
+      alert("Profile updated successfully in Supabase!");
+    } catch (err: any) {
+      alert(err.message || "Failed to update profile");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const tabs = [
@@ -335,7 +337,7 @@ export default function SettingsPage() {
                       <p className="text-sm text-muted-foreground mb-6">Bulk add contacts by uploading a CSV file. We will automatically map the columns.</p>
                     </div>
                     <label className="w-full flex items-center justify-center gap-2 h-10 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-xl text-sm font-bold transition-all group-hover:bg-primary group-hover:text-primary-foreground cursor-pointer">
-    <Upload className="w-4 h-4" /> Import from CSV
+    <Upload className="w-4 h-4" /> {isLoading ? "Importing..." : "Import from CSV"}
     <input type="file" accept=".csv" className="hidden" onChange={handleImport} disabled={isLoading} />
   </label>
                   </div>
