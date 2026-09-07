@@ -35,10 +35,23 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           if (item.action === 'INSERT_CONTACT') {
             item.payload.user_id = session.user.id;
-            const { error } = await supabase.from('contacts').insert([item.payload]);
+            
+            // Strip invalid columns that may have been queued previously
+            const cleanPayload: any = {};
+            const validCols = ['name', 'company', 'role', 'email', 'phone', 'location', 'avatar', 'last_contact', 'notes', 'tags', 'user_id'];
+            for (const key of Object.keys(item.payload)) {
+              if (validCols.includes(key)) cleanPayload[key] = item.payload[key];
+            }
+            
+            const { error } = await supabase.from('contacts').insert([cleanPayload]);
             if (error) throw error;
           } else if (item.action === 'UPDATE_CONTACT') {
-            const { error } = await supabase.from('contacts').update(item.payload).eq('id', item.id);
+            const cleanPayload: any = {};
+            const validCols = ['name', 'company', 'role', 'email', 'phone', 'location', 'avatar', 'last_contact', 'notes', 'tags', 'user_id'];
+            for (const key of Object.keys(item.payload)) {
+              if (validCols.includes(key)) cleanPayload[key] = item.payload[key];
+            }
+            const { error } = await supabase.from('contacts').update(cleanPayload).eq('id', item.id);
             if (error) throw error;
           }
         } catch (e) {
@@ -149,9 +162,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
         const payload: any = {
           name: c.name, company: c.company, role: c.role, email: c.email,
           phone: c.phone, location: c.location, avatar: c.avatar,
-          last_contact: c.last_contact, notes: c.notes, tags: c.tags || [],
-          linkedin: c.linkedin, twitter: c.twitter, instagram: c.instagram,
-          business_card_image: c.business_card_image
+          last_contact: c.last_contact, notes: c.notes, tags: c.tags || []
         };
         Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
 
