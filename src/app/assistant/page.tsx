@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Bot, Send, User, Sparkles, Camera, X, Mic, Loader2, Wrench, CheckCircle2, XCircle, FileCode2 } from 'lucide-react';
 import { useStore } from '@/lib/store';
+import { supabase } from '@/lib/supabase';
 import Tesseract from 'tesseract.js';
 // from '@/lib/store';
 
@@ -159,8 +160,11 @@ export default function AssistantPage() {
         formData.append('file', audioBlob);
 
         try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const token = session?.access_token;
           const res = await fetch('/api/transcribe', {
             method: 'POST',
+            headers: token ? { 'Authorization': `Bearer ${token}` } : undefined,
             body: formData,
           });
           if (res.ok) {
@@ -214,6 +218,10 @@ export default function AssistantPage() {
     setIsLoading(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Unauthorized. Please log in.");
+
       let finalPrompt = userText;
 
       if (imageToSend) {
@@ -239,7 +247,7 @@ Please acknowledge the card details, summarize who they are, and ask if I should
 
       const res = await fetch('/api/assistant', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ prompt: finalPrompt, contacts })
       });
       const data = await res.json();
